@@ -1,6 +1,8 @@
 #include <assert.h>
 #include "util.h"
 
+#define INST_SYNC asm volatile("cpuid")
+
 #define HIT_CYCLES_MAX 250
 #define CACHE_LINE_SIZE 64
 #define MSB_MASK ((uint64_t)-1)

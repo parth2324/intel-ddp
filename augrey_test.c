@@ -101,66 +101,119 @@ bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* 
             __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
         }}
 
+        INST_SYNC;
+
         // bring everything into the cache.
         for(int j = 0; j < M; j++){
             maccess((ADDR_PTR)(arr[j * ind_scale]));
         }
 
+        INST_SYNC;
+
         // ensure everything is in cache.
-        for(int j = 0; j < M; j++){
-            tgt = (ADDR_PTR)(arr[j * ind_scale]);
-            time_taken = maccess_t(tgt);
-            if(time_taken > HIT_CYCLES_MAX){
-                printf("Did not persist in cache, checking %d:%s.\n", 
-                j, convertToBinary(tgt, msg));
-                // return false;
-            }
-        }
+        // for(int j = 0; j < M; j++){
+        //     tgt = (ADDR_PTR)(arr[j * ind_scale]);
+        //     time_taken = maccess_t(tgt);
+        //     if(time_taken > HIT_CYCLES_MAX){
+        //         printf("Did not persist in cache, checking %d:%s.\n", 
+        //         j, convertToBinary(tgt, msg));
+        //         // return false;
+        //     }
+        // }
+
+        // INST_SYNC;
 
         // flush ith.
         tgt = (ADDR_PTR)(arr[i * ind_scale]);
         clflush(tgt);
 
         for(int j = 0; j < i; j++){
-            // confirm jth before ith still in cache.
-            agnst = (ADDR_PTR)(arr[j * ind_scale]);
-            time_taken = maccess_t(agnst);
-            if(time_taken > HIT_CYCLES_MAX){
-                printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
-                i, tgt, convertToBinary(tgt, msg),
-                j, agnst, convertToBinary(agnst, msg));
-                // return false;
-            }
-
-            // confirm ith not brought in cache.
-            // time_taken = maccess_t(tgt);
-            // clflush(tgt);
-            // if(time_taken < HIT_CYCLES_MAX){
-            //     printf("Got brought back in cache, checking values before %d:%s.\n",
-            //     i, convertToBinary(tgt, msg));
-            //     // return false;
-            // }
+            maccess((ADDR_PTR)(arr[j * ind_scale]));
+            INST_SYNC;
         }
         for(int j = i + 1; j < M; j++){
-            // confirm jth after ith still in cache.
-            agnst = (ADDR_PTR)(arr[j * ind_scale]);
-            time_taken = maccess_t(agnst);
-            if(time_taken > HIT_CYCLES_MAX){
-                printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
-                i, tgt, convertToBinary(tgt, msg),
-                j, agnst, convertToBinary(agnst, msg));
-                // return false;
-            }
-
-            // confirm ith not brought in cache.
-            // time_taken = maccess_t(tgt);
-            // clflush(tgt);
-            // if(time_taken < HIT_CYCLES_MAX){
-            //     printf("Got brought back in cache, checking values before %d:%s.\n",
-            //     i, convertToBinary(tgt, msg));
-            //     // return false;
-            // }
+            maccess((ADDR_PTR)(arr[j * ind_scale]));
+            INST_SYNC;
         }
+        time_taken = maccess_t(tgt);
+        if(time_taken < HIT_CYCLES_MAX){
+            printf("Clflush didn't persist in before %d:%s.\n",
+            i, convertToBinary(tgt, msg));
+            // return false;
+        }
+
+
+        // for(int j = 0; j < i; j++){
+        //     // confirm jth before ith still in cache.
+        //     maccess((ADDR_PTR)(arr[j * ind_scale]));
+        //     INST_SYNC;
+        // }
+        // time_taken = maccess_t(tgt);
+        // clflush(tgt);
+        // if(time_taken < HIT_CYCLES_MAX){
+        //     printf("Clflush didn't persist in before %d:%s.\n",
+        //     i, convertToBinary(tgt, msg));
+        //     // return false;
+        // }
+
+        // for(int j = i + 1; j < M; j++){
+        //     // confirm jth before ith still in cache.
+        //     maccess((ADDR_PTR)(arr[j * ind_scale]));
+        //     INST_SYNC;
+        // }
+        // time_taken = maccess_t(tgt);
+        // clflush(tgt);
+        // if(time_taken < HIT_CYCLES_MAX){
+        //     printf("Clflush didn't persist in after %d:%s.\n",
+        //     i, convertToBinary(tgt, msg));
+        //     // return false;
+        // }
+
+        // for(int j = 0; j < i; j++){
+        //     // confirm jth before ith still in cache.
+        //     agnst = (ADDR_PTR)(arr[j * ind_scale]);
+        //     time_taken = maccess_t(agnst);
+        //     if(time_taken > HIT_CYCLES_MAX){
+        //         printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
+        //         i, tgt, convertToBinary(tgt, msg),
+        //         j, agnst, convertToBinary(agnst, msg));
+        //         // return false;
+        //     }
+
+        //     // confirm ith not brought in cache.
+        //     time_taken = maccess_t(tgt);
+        //     clflush(tgt);
+        //     if(time_taken < HIT_CYCLES_MAX){
+        //         printf("Got brought back in cache, checking values before %d:%s.\n",
+        //         i, convertToBinary(tgt, msg));
+        //         // return false;
+        //     }
+        // }
+
+        // INST_SYNC;
+
+        // for(int j = i + 1; j < M; j++){
+        //     // confirm jth after ith still in cache.
+        //     agnst = (ADDR_PTR)(arr[j * ind_scale]);
+        //     time_taken = maccess_t(agnst);
+        //     if(time_taken > HIT_CYCLES_MAX){
+        //         printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
+        //         i, tgt, convertToBinary(tgt, msg),
+        //         j, agnst, convertToBinary(agnst, msg));
+        //         // return false;
+        //     }
+
+        //     // confirm ith not brought in cache.
+        //     time_taken = maccess_t(tgt);
+        //     clflush(tgt);
+        //     if(time_taken < HIT_CYCLES_MAX){
+        //         printf("Got brought back in cache, checking values before %d:%s.\n",
+        //         i, convertToBinary(tgt, msg));
+        //         // return false;
+        //     }
+        // }
+
+        // INST_SYNC;
     }
 
     free(msg);
