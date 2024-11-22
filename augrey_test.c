@@ -36,7 +36,7 @@ int main(){
         aop[i * aop_ind_scale] = &data_buffer[idx * U64S_PER_LINE];
         idx += 2;
     }
-    // testing below
+    // Testing below:
     // rand_idx = 1;
     // for (int j = 0; j < M ; j++) {
     //     assert(*(aop[j * aop_ind_scale]) = data_buffer[rand_idx * U64S_PER_LINE]);
@@ -55,7 +55,7 @@ int main(){
         L3:                     36 MiB (1 instance)
     */
     printf("Allocating thrash memory.\n");
-    int thr_mem = ((38 * 1024 * 1024) + (80 * 1024)) * 8;
+    int thr_mem = ((38 * 1024 * 1024) + (80 * 1024));
     volatile uint64_t *thrash_arr = mmap(0, thr_mem, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     for(uint64_t i = 0; i < thr_mem / sizeof(uint64_t); i++) {
         thrash_arr[i] = rand() & (MSB_MASK - 1);
@@ -75,18 +75,92 @@ int main(){
     uint64_t *curr_train_base = times_to_load_train_ptr_baseline;
     uint64_t *curr_train_aop = times_to_load_train_ptr_aop;
 
-    int err_c = 0, test_reps = 3;
+    int test_reps = 1;
+
+    double err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
-        err_c += test_uniqueness(aop, aop_ind_scale, thrash_arr, thr_mem);
+        printf("everything_still_in_cache_test's iteration %d.\n", i);
+        err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
     }
-    printf("Test's error rate: %.2f\n", err_c / (M * test_reps * 1.0));
+    printf("everything_still_in_cache_test's error rate: %.3f%%\n", err_c / test_reps);
+
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("not_overwritten_in_cache_test's iteration %d.\n", i);
+        err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+    }
+    printf("not_overwritten_in_cache_test's error rate: %.3f%%\n", err_c / test_reps);
+
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("not_brought_in_cache_test's iteration %d.\n", i);
+        err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+    }
+    printf("not_brought_in_cache_test's error rate: %.3f%%\n", err_c / test_reps);
+
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("others_still_in_cache_test's iteration %d.\n", i);
+        err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+    }
+    printf("others_still_in_cache_test's error rate: %.3f%%\n", err_c / test_reps);
+
     return 0;
 }
 
-int test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+double everything_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
     char* msg = malloc(sizeof(char) * 100);
     int err_c = 0;
-    uint64_t time_taken;
+    uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * ind_scale;
+
+    // For preventing unwanted compiler optimizations and adding
+    // data dependencies between instructions.
+    uint64_t __trash = 0;
+
+    for(int i = 0; i < M; i++){
+        // thrash cache
+        for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
+            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+        }
+
+        INST_SYNC;
+
+        // bring everything into the cache.
+        for(int j = 0; j < M; j++){
+            maccess((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+        }
+
+        INST_SYNC;
+
+        // ensure everything is in cache.
+        for(int j = 0; j < M; j++){
+            time_taken[j] = maccess_t((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+            INST_SYNC;
+        }
+
+        for(int j = 0; j < M; j++){
+            if(time_taken[j] > HIT_CYCLES_MAX){
+                // printf("Did not persist in cache, checking %d:%s.\n", 
+                // j, convertToBinary(tgt, msg));
+                // return false;
+                err_c++;
+            }
+        }
+
+        INST_SYNC;
+    }
+
+    free(msg);
+    free(time_taken);
+    return err_c * 100.0 / (M * M);
+}
+
+double not_overwritten_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+    char* msg = malloc(sizeof(char) * 100);
+    int err_c = 0;
+    uint64_t time_taken, MOD = M * ind_scale;
     ADDR_PTR tgt, agnst;
 
     // For preventing unwanted compiler optimizations and adding
@@ -95,130 +169,146 @@ int test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* t
 
     for(int i = 0; i < M; i++){
         // thrash cache
-        if(i==0){
         for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
             __trash += (thrash_arr[j] ^ __trash) & 0b1111;
             __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
             __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
-        }}
+        }
+
+        INST_SYNC;
+
+        // bring ith.
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
+        maccess(tgt);
+
+        INST_SYNC;
+
+        // bring everything else into the cache.
+        for(int j = 0; j < M; j++){
+            if(j != i) maccess((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+            INST_SYNC;
+        }
+
+        time_taken = maccess_t(tgt);
+        if(time_taken > HIT_CYCLES_MAX){
+            // printf("maccess didn't persist %d:%s.\n",
+            // i, convertToBinary(tgt, msg));
+            err_c++;
+        }
+
+        INST_SYNC;
+    }
+
+    free(msg);
+    return (100.0 * err_c) / M;
+}
+
+double not_brought_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+    char* msg = malloc(sizeof(char) * 100);
+    int err_c = 0;
+    uint64_t time_taken, MOD = M * ind_scale;
+    ADDR_PTR tgt, agnst;
+
+    // For preventing unwanted compiler optimizations and adding
+    // data dependencies between instructions.
+    uint64_t __trash = 0;
+
+    for(int i = 0; i < M; i++){
+        // thrash cache
+        for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
+            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+        }
 
         INST_SYNC;
 
         // bring everything into the cache.
         for(int j = 0; j < M; j++){
-            maccess((ADDR_PTR)(arr[j * ind_scale]));
+            maccess((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
         }
 
         INST_SYNC;
 
-        // ensure everything is in cache.
-        // for(int j = 0; j < M; j++){
-        //     tgt = (ADDR_PTR)(arr[j * ind_scale]);
-        //     time_taken = maccess_t(tgt);
-        //     if(time_taken > HIT_CYCLES_MAX){
-        //         printf("Did not persist in cache, checking %d:%s.\n", 
-        //         j, convertToBinary(tgt, msg));
-        //         // return false;
-        //     }
-        // }
-
-        // INST_SYNC;
-
         // flush ith.
-        tgt = (ADDR_PTR)(arr[i * ind_scale]);
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
         clflush(tgt);
 
-        for(int j = 0; j < i; j++){
-            maccess((ADDR_PTR)(arr[j * ind_scale]));
-            INST_SYNC;
-        }
-        for(int j = i + 1; j < M; j++){
-            maccess((ADDR_PTR)(arr[j * ind_scale]));
+        INST_SYNC;
+
+        for(int j = 0; j < M; j++){
+            // confirm jth still in cache.
+            if(j != i) maccess((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
             INST_SYNC;
         }
         time_taken = maccess_t(tgt);
         if(time_taken < HIT_CYCLES_MAX){
-            printf("flush didn't persist for %d:%s.\n",
-            i, convertToBinary(tgt, msg));
+            // printf("clflush didn't persist %d:%s.\n",
+            // i, convertToBinary(tgt, msg));
             err_c++;
         }
 
-
-        // for(int j = 0; j < i; j++){
-        //     // confirm jth before ith still in cache.
-        //     maccess((ADDR_PTR)(arr[j * ind_scale]));
-        //     INST_SYNC;
-        // }
-        // time_taken = maccess_t(tgt);
-        // clflush(tgt);
-        // if(time_taken < HIT_CYCLES_MAX){
-        //     printf("Clflush didn't persist in before %d:%s.\n",
-        //     i, convertToBinary(tgt, msg));
-        //     // return false;
-        // }
-
-        // for(int j = i + 1; j < M; j++){
-        //     // confirm jth before ith still in cache.
-        //     maccess((ADDR_PTR)(arr[j * ind_scale]));
-        //     INST_SYNC;
-        // }
-        // time_taken = maccess_t(tgt);
-        // clflush(tgt);
-        // if(time_taken < HIT_CYCLES_MAX){
-        //     printf("Clflush didn't persist in after %d:%s.\n",
-        //     i, convertToBinary(tgt, msg));
-        //     // return false;
-        // }
-
-        // for(int j = 0; j < i; j++){
-        //     // confirm jth before ith still in cache.
-        //     agnst = (ADDR_PTR)(arr[j * ind_scale]);
-        //     time_taken = maccess_t(agnst);
-        //     if(time_taken > HIT_CYCLES_MAX){
-        //         printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
-        //         i, tgt, convertToBinary(tgt, msg),
-        //         j, agnst, convertToBinary(agnst, msg));
-        //         // return false;
-        //     }
-
-        //     // confirm ith not brought in cache.
-        //     time_taken = maccess_t(tgt);
-        //     clflush(tgt);
-        //     if(time_taken < HIT_CYCLES_MAX){
-        //         printf("Got brought back in cache, checking values before %d:%s.\n",
-        //         i, convertToBinary(tgt, msg));
-        //         // return false;
-        //     }
-        // }
-
-        // INST_SYNC;
-
-        // for(int j = i + 1; j < M; j++){
-        //     // confirm jth after ith still in cache.
-        //     agnst = (ADDR_PTR)(arr[j * ind_scale]);
-        //     time_taken = maccess_t(agnst);
-        //     if(time_taken > HIT_CYCLES_MAX){
-        //         printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
-        //         i, tgt, convertToBinary(tgt, msg),
-        //         j, agnst, convertToBinary(agnst, msg));
-        //         // return false;
-        //     }
-
-        //     // confirm ith not brought in cache.
-        //     time_taken = maccess_t(tgt);
-        //     clflush(tgt);
-        //     if(time_taken < HIT_CYCLES_MAX){
-        //         printf("Got brought back in cache, checking values before %d:%s.\n",
-        //         i, convertToBinary(tgt, msg));
-        //         // return false;
-        //     }
-        // }
-
-        // INST_SYNC;
+        INST_SYNC;
     }
 
     free(msg);
-    return err_c;
+    return (err_c * 100.0) / M;
+}
+
+double others_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+    char* msg = malloc(sizeof(char) * 100);
+    int err_c = 0;
+    uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * ind_scale;
+    ADDR_PTR tgt, agnst;
+
+    // For preventing unwanted compiler optimizations and adding
+    // data dependencies between instructions.
+    uint64_t __trash = 0;
+
+    for(int i = 0; i < M; i++){
+        // thrash cache
+        for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
+            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+        }
+
+        INST_SYNC;
+
+        // bring everything into the cache.
+        for(int j = 0; j < M; j++){
+            maccess((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+        }
+
+        INST_SYNC;
+
+        // flush ith.
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
+        clflush(tgt);
+
+        INST_SYNC;
+
+        for(int j = 0; j < M; j++){
+            if(j != i) time_taken[j] = maccess_t((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+            INST_SYNC;
+        }
+
+        for(int j = 0; j < M; j++){
+            // confirm jth still in cache.
+            if(j != i && time_taken[j] > HIT_CYCLES_MAX){
+                // printf("Got evicted from cache, checking %d:%ld:%s against %d:%ld:%s.\n",
+                // i, tgt, convertToBinary(tgt, msg),
+                // j, agnst, convertToBinary(agnst, msg));
+                err_c++;
+            }
+        }
+
+        INST_SYNC;
+    }
+
+    free(time_taken);
+    free(msg);
+    return (err_c * 100.0) / ((M - 1) * M);
 }
 
 char* convertToBinary(uint64_t num, char* msg) {
