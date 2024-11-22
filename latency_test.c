@@ -5,7 +5,7 @@
 // ADJUST THESE PARAMETERS IF NEEDED
 //**************************
 //Num Latency Buckets.
-#define NUM_LAT_BUCKETS (400)
+#define NUM_LAT_BUCKETS (500)
 //Each Bucket Step.
 #define BUCKET_LAT_STEP (1)
 //Num Iterations

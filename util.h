@@ -22,18 +22,6 @@
 #define ADDR_PTR uint64_t
 #define CYCLES uint64_t
 
-//Channel parameters
-#define TX_INTERVAL_DEF           0x00001E00
-#define SYNC_TIME_MASK_DEF        0x00001FFF
-#define SYNC_JITTER_DEF              0x00100
-
-//Shared memory
-#define DEFAULT_FILE_NAME       "README.md"
-#define DEFAULT_FILE_OFFSET	 21 * 64
-#define DEFAULT_FILE_SIZE	  4096
-#define CACHE_BLOCK_SIZE	    64
-#define MAX_BUFFER_LEN	    1024
-
 //Colors
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -44,12 +32,9 @@
 
 //Functions to help Flush+Reload
 void     clflush(ADDR_PTR addr);     //Flush Address
+void     mfence();                   //Sync loads
 void     maccess(ADDR_PTR addr);     //Load Address
 CYCLES   maccess_t(ADDR_PTR addr);   //Load And Time the Access
 uint64_t rdtscp(void);               //Get Timestamp
-
-//String Conversion
-char *string_to_binary(char *s);
-char *conv_char(char *data, int size, char *msg);
 
 #endif
