@@ -75,16 +75,17 @@ int main(){
     uint64_t *curr_train_base = times_to_load_train_ptr_baseline;
     uint64_t *curr_train_aop = times_to_load_train_ptr_aop;
 
-    if(!test_uniqueness(aop, aop_ind_scale, thrash_arr, thr_mem)) printf("Fail.\n");
-    else printf("Pass.\n");
-    printf("--------------------------------------------------------------------------\n");
-    if(!test_uniqueness(aop, aop_ind_scale, thrash_arr, thr_mem)) printf("Fail.\n");
-    else printf("Pass.\n");
+    int err_c = 0, test_reps = 3;
+    for(int i = 0; i < test_reps; i++){
+        err_c += test_uniqueness(aop, aop_ind_scale, thrash_arr, thr_mem);
+    }
+    printf("Test's error rate: %.2f\n", err_c / (M * test_reps * 1.0));
     return 0;
 }
 
-bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+int test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
     char* msg = malloc(sizeof(char) * 100);
+    int err_c = 0;
     uint64_t time_taken;
     ADDR_PTR tgt, agnst;
 
@@ -137,9 +138,9 @@ bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* 
         }
         time_taken = maccess_t(tgt);
         if(time_taken < HIT_CYCLES_MAX){
-            printf("Clflush didn't persist in before %d:%s.\n",
+            printf("flush didn't persist for %d:%s.\n",
             i, convertToBinary(tgt, msg));
-            // return false;
+            err_c++;
         }
 
 
@@ -217,7 +218,7 @@ bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* 
     }
 
     free(msg);
-    return true;
+    return err_c;
 }
 
 char* convertToBinary(uint64_t num, char* msg) {

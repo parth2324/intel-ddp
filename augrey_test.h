@@ -17,5 +17,5 @@
 typedef long int intptr_t;
 
 int main();
-bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);
+int test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);
 char* convertToBinary(uint64_t num, char* msg);
