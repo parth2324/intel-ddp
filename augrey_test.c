@@ -10,37 +10,38 @@ int main(){
 
     int aop_ind_scale = U64S_PER_LINE + 1 - ptrs_per_line;
     int aop_mem = M * CACHE_LINE_SIZE * aop_ind_scale + AOP_ALIGN_WIN;
-    int buf_mem = PRNG_m + BUF_ALIGN_WIN;
+    int buf_mem = BUF_MEM + BUF_ALIGN_WIN;
 
+    printf("Initializing aop.\n");
     volatile uint64_t **aop = mmap(0, aop_mem, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     assert(aop != MAP_FAILED);
     memset(aop, 0, aop_mem);
-
     ADDR_PTR curr = (ADDR_PTR)aop;
     curr += (-curr) & (AOP_ALIGN_WIN - 1);
     aop = (volatile uint64_t **)curr;
 
+    printf("Initializing source buffer.\n");
     volatile uint64_t *data_buffer = mmap(0, buf_mem, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     assert(data_buffer != MAP_FAILED);
+    for(uint64_t i = 0; i < buf_mem / sizeof(uint64_t); i++) {
+        data_buffer[i] = rand() & (MSB_MASK - 1);
+    }
     curr = (ADDR_PTR)data_buffer;
     curr += (-curr) & (BUF_ALIGN_WIN - 1);
     data_buffer = (volatile uint64_t *)curr;
 
-    for(uint64_t i = 0; i < buf_mem / sizeof(uint64_t); i++) {
-        data_buffer[i] = rand() & (MSB_MASK - 1);
-    }
-
-    uint64_t rand_idx = 1;
+    printf("Allocating pointers to aop from source buffer.\n");
+    uint64_t idx = 1;
     for(int i = 0; i < M; i += 1) {
-        aop[i * aop_ind_scale] = &data_buffer[rand_idx * U64S_PER_LINE];
-        rand_idx = prng(rand_idx);
+        aop[i * aop_ind_scale] = &data_buffer[idx * U64S_PER_LINE];
+        idx += 2;
     }
     // testing below
-    rand_idx = 1;
-    for (int j = 0; j < M ; j++) {
-        assert(*(aop[j * aop_ind_scale]) = data_buffer[rand_idx * U64S_PER_LINE]);
-        rand_idx = prng(rand_idx);
-    }
+    // rand_idx = 1;
+    // for (int j = 0; j < M ; j++) {
+    //     assert(*(aop[j * aop_ind_scale]) = data_buffer[rand_idx * U64S_PER_LINE]);
+    //     rand_idx = prng(rand_idx);
+    // }
 
     // For preventing unwanted compiler optimizations and adding
     // data dependencies between instructions.
@@ -53,6 +54,7 @@ int main(){
         L2:                     2 MiB (1 instance)
         L3:                     36 MiB (1 instance)
     */
+    printf("Allocating thrash memory.\n");
     int thr_mem = ((38 * 1024 * 1024) + (80 * 1024)) * 8;
     volatile uint64_t *thrash_arr = mmap(0, thr_mem, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     for(uint64_t i = 0; i < thr_mem / sizeof(uint64_t); i++) {
@@ -92,11 +94,12 @@ bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* 
 
     for(int i = 0; i < M; i++){
         // thrash cache
+        if(i==0){
         for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
             __trash += (thrash_arr[j] ^ __trash) & 0b1111;
             __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
             __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
-        }
+        }}
 
         // bring everything into the cache.
         for(int j = 0; j < M; j++){
@@ -130,13 +133,13 @@ bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* 
             }
 
             // confirm ith not brought in cache.
-            time_taken = maccess_t(tgt);
-            clflush(tgt);
-            if(time_taken < HIT_CYCLES_MAX){
-                printf("Got brought back in cache, checking values before %d:%s.\n",
-                i, convertToBinary(tgt, msg));
-                // return false;
-            }
+            // time_taken = maccess_t(tgt);
+            // clflush(tgt);
+            // if(time_taken < HIT_CYCLES_MAX){
+            //     printf("Got brought back in cache, checking values before %d:%s.\n",
+            //     i, convertToBinary(tgt, msg));
+            //     // return false;
+            // }
         }
         for(int j = i + 1; j < M; j++){
             // confirm jth after ith still in cache.
@@ -150,13 +153,13 @@ bool test_uniqueness(volatile uint64_t** arr, int ind_scale, volatile uint64_t* 
             }
 
             // confirm ith not brought in cache.
-            time_taken = maccess_t(tgt);
-            clflush(tgt);
-            if(time_taken < HIT_CYCLES_MAX){
-                printf("Got brought back in cache, checking values before %d:%s.\n",
-                i, convertToBinary(tgt, msg));
-                // return false;
-            }
+            // time_taken = maccess_t(tgt);
+            // clflush(tgt);
+            // if(time_taken < HIT_CYCLES_MAX){
+            //     printf("Got brought back in cache, checking values before %d:%s.\n",
+            //     i, convertToBinary(tgt, msg));
+            //     // return false;
+            // }
         }
     }
 

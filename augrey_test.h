@@ -8,8 +8,9 @@
 #define BUF_ALIGN_WIN CACHE_LINE_SIZE
 #define U64S_PER_LINE (CACHE_LINE_SIZE / sizeof(uint64_t))
 #define PNRG_a 75
-#define PRNG_m 256 * 1024 * 1024
-#define prng(x) ((PNRG_a * x) % PRNG_m)
+#define BUF_MEM 256 * 1024 * 1024
+// #define PRNG_r (BUF_MEM / sizeof(uint64_t))
+// #define prng(x) ((PNRG_a * x) % PRNG_r)
 
 typedef long int intptr_t;
 
