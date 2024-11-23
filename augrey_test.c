@@ -140,7 +140,7 @@ int main(int argc, char **argv){
     }
     printf("others_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    test_gen_eviction_set(aop[1]);
+    // test_gen_eviction_set(aop[1]);
 
     //  ----------------------------------------------------------------------------------------
 
@@ -224,24 +224,27 @@ int main(int argc, char **argv){
 }
 
 void test_gen_eviction_set(uint64_t tgt){
-    int src_mem_size = 1 * 1024 * 1024, len = 0, MOD = 128;
+    int src_mem_size = 1 * 1024 * 1024, len = 0;
     volatile uint64_t src_mem = (uint64_t)mmap(0, src_mem_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     for(uint64_t addr = src_mem; addr < src_mem + src_mem_size; addr += sizeof(uint64_t)){
-        maccess((tgt % MOD) + (tgt / MOD));
+        maccess(tgt);
+        INST_SYNC;
         for(uint64_t test = addr + sizeof(uint64_t); test < src_mem + src_mem_size; test += sizeof(uint64_t)){
-            maccess((test % MOD) + (test / MOD));
+            maccess(test);
+            INST_SYNC;
         }
-        if(maccess_t((tgt % MOD) + (tgt / MOD)) < HIT_CYCLES_MAX){
+        if(maccess_t(tgt) < HIT_CYCLES_MAX){
             *((uint64_t*)(src_mem + sizeof(uint64_t) * len)) = addr;
             len++;
         }
     }
+    INST_SYNC;
     clflush(tgt);
     printf("%ld\n", maccess_t(tgt));
     maccess(tgt);
     INST_SYNC;
     for(int i = 0; i < len; i++){
-        maccess(*((uint64_t*)(((src_mem + sizeof(uint64_t) * i) % MOD) + ((src_mem + sizeof(uint64_t) * i) / MOD))));
+        maccess(*((uint64_t*)(src_mem + sizeof(uint64_t) * i)));
     }
     printf("%ld\n", maccess_t(tgt));
 }
@@ -298,8 +301,8 @@ double cache_reset_agent_test(volatile uint64_t* arr, int ind_scale,
         if(time_taken[i] < HIT_CYCLES_MAX) err_c2++;
     }
 
-    printf("bad array of pointers: \t%d\t of \t%d\t (%.2f%%)", err_c2, M, (100.0 * err_c2 / M));
-    printf("bad data  of pointers: \t%d\t of \t%d\t (%.2f%%)", err_c1, M, (100.0 * err_c1 / M));
+    printf("bad array of pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c2, M, (100.0 * err_c2 / M));
+    printf("bad data  of pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c1, M, (100.0 * err_c1 / M));
 
     free(time_taken);
     return (err_c1 + err_c2) * 100.0 / (M << 1);
@@ -348,8 +351,8 @@ double everything_still_in_cache_test(volatile uint64_t* arr, int ind_scale,
         if(time_taken[j] > HIT_CYCLES_MAX) err_c2++;
     }
 
-    printf("bad array of pointers: \t%d\t of \t%d\t (%.2f%%)", err_c2, M, (100.0 * err_c2 / M));
-    printf("bad data  of pointers: \t%d\t of \t%d\t (%.2f%%)", err_c1, M, (100.0 * err_c1 / M));
+    printf("bad array of pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c2, M, (100.0 * err_c2 / M));
+    printf("bad data  of pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c1, M, (100.0 * err_c1 / M));
 
     free(time_taken);
     return (err_c1 + err_c2) * 100.0 / (M << 1);
