@@ -17,6 +17,7 @@
 typedef long int intptr_t;
 
 int main();
+double cache_reset_agent_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);
 double everything_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);
 double not_overwritten_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);
 double not_brought_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);

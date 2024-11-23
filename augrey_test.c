@@ -1,7 +1,7 @@
 #include "augrey_test.h"
 
-#define M 256
-#define N 100
+#define M 264
+#define N 256
 
 int main(){
     srand(42);
@@ -43,10 +43,6 @@ int main(){
     //     rand_idx = prng(rand_idx);
     // }
 
-    // For preventing unwanted compiler optimizations and adding
-    // data dependencies between instructions.
-    uint64_t __trash = 0;
-
     /*
     Caches (sum of all):      
         L1d:                    48 KiB (1 instance)
@@ -61,23 +57,16 @@ int main(){
         thrash_arr[i] = rand() & (MSB_MASK - 1);
     }
 
-    int repetitions = 1000;
-    uint64_t *times_to_load_test_ptr_baseline =
-        malloc(repetitions * sizeof(uint64_t));
-    uint64_t *times_to_load_test_ptr_aop =
-        malloc(repetitions * sizeof(uint64_t));
-    uint64_t *times_to_load_train_ptr_baseline =
-        malloc(repetitions * sizeof(uint64_t));
-    uint64_t *times_to_load_train_ptr_aop =
-        malloc(repetitions * sizeof(uint64_t));
-    uint64_t *curr_test_base = times_to_load_test_ptr_baseline;
-    uint64_t *curr_test_aop = times_to_load_test_ptr_aop;
-    uint64_t *curr_train_base = times_to_load_train_ptr_baseline;
-    uint64_t *curr_train_aop = times_to_load_train_ptr_aop;
-
     int test_reps = 1;
 
     double err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("cache_reset_agent_test's iteration %d.\n", i);
+        err_c += cache_reset_agent_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+    }
+    printf("cache_reset_agent_test's error rate: %.3f%%\n", err_c / test_reps);
+
+    err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
         printf("everything_still_in_cache_test's iteration %d.\n", i);
         err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
@@ -105,27 +94,115 @@ int main(){
     }
     printf("others_still_in_cache_test's error rate: %.3f%%\n", err_c / test_reps);
 
-    return 0;
-}
+    
+    int repetitions = 10;
+    // uint64_t *times_to_load_test_ptr_baseline =
+    //     malloc(repetitions * sizeof(uint64_t));
+    // uint64_t *times_to_load_test_ptr_aop =
+    //     malloc(repetitions * sizeof(uint64_t));
+    // uint64_t *times_to_load_train_ptr_baseline =
+    //     malloc(repetitions * sizeof(uint64_t));
+    // uint64_t *times_to_load_train_ptr_aop =
+    //     malloc(repetitions * sizeof(uint64_t));
+    // uint64_t *curr_test_base = times_to_load_test_ptr_baseline;
+    // uint64_t *curr_test_aop = times_to_load_test_ptr_aop;
+    // uint64_t *curr_train_base = times_to_load_train_ptr_baseline;
+    // uint64_t *curr_train_aop = times_to_load_train_ptr_aop;
 
-double everything_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
-    char* msg = malloc(sizeof(char) * 100);
-    int err_c = 0;
-    uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * ind_scale;
+    uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * aop_ind_scale;
+    memset(time_taken, 0, sizeof(uint64_t) * M);
 
     // For preventing unwanted compiler optimizations and adding
     // data dependencies between instructions.
     uint64_t __trash = 0;
 
-    for(int i = 0; i < M; i++){
+    printf("Beginning main test.\n");
+    for(int i = 0; i < repetitions; i++){
         // thrash cache
-        for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
+        for (int j = 0; j < thr_mem / sizeof(uint64_t) - 2; j++) {
             __trash += (thrash_arr[j] ^ __trash) & 0b1111;
             __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
             __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
         }
 
         INST_SYNC;
+
+        // bring training component into the cache.
+        for(int j = 0; j < N; j++){
+            __trash += (*(aop[(j * aop_ind_scale) % MOD]) ^ __trash) & 0b1111;
+            INST_SYNC;
+        }
+
+        // measure testing component latencies.
+        for(int j = N; j < M; j++){
+            time_taken[j] += maccess_t((ADDR_PTR)(aop[(j * aop_ind_scale) % MOD]));
+            INST_SYNC;
+        }
+    }
+
+    // get average times and calc fraction brought in.
+    int ddp_hit_c = 0;
+    double avg_hit_time = 0.0;
+    for(int j = N; j < M; j++){
+        time_taken[j] /= repetitions;
+        if(time_taken[j] < HIT_CYCLES_MAX){
+            ddp_hit_c++;
+            avg_hit_time += time_taken[j];
+        }
+    }
+    avg_hit_time /= ddp_hit_c;
+
+    memset(time_taken, 0, sizeof(uint64_t) * M);
+    for(int i = 0; i < repetitions; i++){
+        // thrash cache
+        for (int j = 0; j < thr_mem / sizeof(uint64_t) - 2; j++) {
+            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+        }
+
+        INST_SYNC;
+
+        // measure testing component latencies.
+        for(int j = N; j < M; j++){
+            time_taken[j] += maccess_t((ADDR_PTR)(aop[(j * aop_ind_scale) % MOD]));
+            INST_SYNC;
+        }
+    }
+
+    // get average times and calc fraction not brought in.
+    int miss_c = 0;
+    double avg_miss_time = 0.0;
+    for(int j = N; j < M; j++){
+        time_taken[j] /= repetitions;
+        if(time_taken[j] > HIT_CYCLES_MAX){
+            miss_c++;
+            avg_miss_time += time_taken[j];
+        }
+    }
+    avg_miss_time /= miss_c;
+
+    printf("With training: %.3f%% brought in, %d of %d, with avg hit time: %.1f\n", 
+    ddp_hit_c * 100.0 / (M - N), ddp_hit_c, (M - N), avg_hit_time);
+    printf("Without training: %.3f%% not brought in, %d of %d, with avg miss time: %.1f\n", 
+    miss_c * 100.0 / (M - N), miss_c, (M - N), avg_miss_time);
+
+    free(time_taken);
+    return 0;
+}
+
+double cache_reset_agent_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+    // char* msg = malloc(sizeof(char) * 100);
+    int err_c = 0;
+    uint64_t time_taken, MOD = M * ind_scale;
+    ADDR_PTR tgt;
+    
+    // For preventing unwanted compiler optimizations and adding
+    // data dependencies between instructions.
+    uint64_t __trash = 0;
+
+    for(int i = 0; i < M; i++){
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
 
         // bring everything into the cache.
         for(int j = 0; j < M; j++){
@@ -134,40 +211,94 @@ double everything_still_in_cache_test(volatile uint64_t** arr, int ind_scale, vo
 
         INST_SYNC;
 
-        // ensure everything is in cache.
+        // thrash cache.
+        // clflush(tgt);
+        // for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
+        //     __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+        //     __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+        //     __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+        // }
         for(int j = 0; j < M; j++){
-            time_taken[j] = maccess_t((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
-            INST_SYNC;
+            clflush((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
         }
 
-        for(int j = 0; j < M; j++){
-            if(time_taken[j] > HIT_CYCLES_MAX){
-                // printf("Did not persist in cache, checking %d:%s.\n", 
-                // j, convertToBinary(tgt, msg));
-                // return false;
-                err_c++;
-            }
+        INST_SYNC;
+
+        time_taken = maccess_t(tgt);
+        if(time_taken < HIT_CYCLES_MAX){
+            // printf("Did not leave cache, checking %d:%s.\n", 
+            // j, convertToBinary(tgt, msg));
+            // return false;
+            err_c++;
         }
 
         INST_SYNC;
     }
 
-    free(msg);
+    // free(msg);
+    return err_c * 100.0 / M;
+}
+
+double everything_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
+    // char* msg = malloc(sizeof(char) * 100);
+    int err_c = 0;
+    uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * ind_scale;
+
+    // For preventing unwanted compiler optimizations and adding
+    // data dependencies between instructions.
+    uint64_t __trash = 0;
+
+    // thrash cache
+    for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
+        __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+    }
+
+    INST_SYNC;
+
+    // bring everything into the cache.
+    for(int j = 0; j < M; j++){
+        maccess((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+    }
+
+    INST_SYNC;
+
+    // ensure everything is in cache.
+    for(int j = 0; j < M; j++){
+        time_taken[j] = maccess_t((ADDR_PTR)(arr[(j * ind_scale) % MOD]));
+        INST_SYNC;
+    }
+
+    for(int j = 0; j < M; j++){
+        if(time_taken[j] > HIT_CYCLES_MAX){
+            // printf("Did not persist in cache, checking %d:%s.\n", 
+            // j, convertToBinary(tgt, msg));
+            // return false;
+            err_c++;
+        }
+    }
+
+    INST_SYNC;
+
+    // free(msg);
     free(time_taken);
-    return err_c * 100.0 / (M * M);
+    return err_c * 100.0 / M;
 }
 
 double not_overwritten_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
-    char* msg = malloc(sizeof(char) * 100);
+    // char* msg = malloc(sizeof(char) * 100);
     int err_c = 0;
     uint64_t time_taken, MOD = M * ind_scale;
-    ADDR_PTR tgt, agnst;
+    ADDR_PTR tgt;
 
     // For preventing unwanted compiler optimizations and adding
     // data dependencies between instructions.
     uint64_t __trash = 0;
 
     for(int i = 0; i < M; i++){
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
+
         // thrash cache
         for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
             __trash += (thrash_arr[j] ^ __trash) & 0b1111;
@@ -178,7 +309,6 @@ double not_overwritten_in_cache_test(volatile uint64_t** arr, int ind_scale, vol
         INST_SYNC;
 
         // bring ith.
-        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
         maccess(tgt);
 
         INST_SYNC;
@@ -199,12 +329,12 @@ double not_overwritten_in_cache_test(volatile uint64_t** arr, int ind_scale, vol
         INST_SYNC;
     }
 
-    free(msg);
+    // free(msg);
     return (100.0 * err_c) / M;
 }
 
 double not_brought_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
-    char* msg = malloc(sizeof(char) * 100);
+    // char* msg = malloc(sizeof(char) * 100);
     int err_c = 0;
     uint64_t time_taken, MOD = M * ind_scale;
     ADDR_PTR tgt, agnst;
@@ -214,6 +344,8 @@ double not_brought_in_cache_test(volatile uint64_t** arr, int ind_scale, volatil
     uint64_t __trash = 0;
 
     for(int i = 0; i < M; i++){
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
+
         // thrash cache
         for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
             __trash += (thrash_arr[j] ^ __trash) & 0b1111;
@@ -231,7 +363,6 @@ double not_brought_in_cache_test(volatile uint64_t** arr, int ind_scale, volatil
         INST_SYNC;
 
         // flush ith.
-        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
         clflush(tgt);
 
         INST_SYNC;
@@ -251,12 +382,12 @@ double not_brought_in_cache_test(volatile uint64_t** arr, int ind_scale, volatil
         INST_SYNC;
     }
 
-    free(msg);
+    // free(msg);
     return (err_c * 100.0) / M;
 }
 
 double others_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size){
-    char* msg = malloc(sizeof(char) * 100);
+    // char* msg = malloc(sizeof(char) * 100);
     int err_c = 0;
     uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * ind_scale;
     ADDR_PTR tgt, agnst;
@@ -266,6 +397,8 @@ double others_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volati
     uint64_t __trash = 0;
 
     for(int i = 0; i < M; i++){
+        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
+
         // thrash cache
         for (int j = 0; j < thrash_size / sizeof(uint64_t) - 2; j++) {
             __trash += (thrash_arr[j] ^ __trash) & 0b1111;
@@ -283,7 +416,6 @@ double others_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volati
         INST_SYNC;
 
         // flush ith.
-        tgt = (ADDR_PTR)(arr[(i * ind_scale) % MOD]);
         clflush(tgt);
 
         INST_SYNC;
@@ -307,7 +439,7 @@ double others_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volati
     }
 
     free(time_taken);
-    free(msg);
+    // free(msg);
     return (err_c * 100.0) / ((M - 1) * M);
 }
 
