@@ -1,0 +1,322 @@
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=1  -c augrey_test.c
+gcc -DN=1 -c util.c
+gcc -DN=1 augrey_test.o util.o -o augrey_test
+N = 1
+1 ptrs/line:
+With training: 31.373% brought in, 80 of 255, with avg hit time: 254.6
+Without training: 67.843% not brought in, 173 of 255, with avg miss time: 339.9
+2 ptrs/line:
+With training: 30.588% brought in, 78 of 255, with avg hit time: 259.9
+Without training: 68.235% not brought in, 174 of 255, with avg miss time: 329.0
+3 ptrs/line:
+With training: 35.294% brought in, 90 of 255, with avg hit time: 243.2
+Without training: 64.706% not brought in, 165 of 255, with avg miss time: 375.2
+6 ptrs/line:
+With training: 32.157% brought in, 82 of 255, with avg hit time: 250.8
+Without training: 69.020% not brought in, 176 of 255, with avg miss time: 346.1
+7 ptrs/line:
+With training: 24.706% brought in, 63 of 255, with avg hit time: 252.4
+Without training: 77.255% not brought in, 197 of 255, with avg miss time: 339.5
+8 ptrs/line:
+With training: 40.000% brought in, 102 of 255, with avg hit time: 253.2
+Without training: 58.431% not brought in, 149 of 255, with avg miss time: 329.9
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=2  -c augrey_test.c
+gcc -DN=2 -c util.c
+gcc -DN=2 augrey_test.o util.o -o augrey_test
+N = 2
+1 ptrs/line:
+With training: 27.559% brought in, 70 of 254, with avg hit time: 255.9
+Without training: 71.654% not brought in, 182 of 254, with avg miss time: 325.6
+2 ptrs/line:
+With training: 25.197% brought in, 64 of 254, with avg hit time: 258.5
+Without training: 73.228% not brought in, 186 of 254, with avg miss time: 343.0
+3 ptrs/line:
+With training: 46.063% brought in, 117 of 254, with avg hit time: 248.7
+Without training: 53.937% not brought in, 137 of 254, with avg miss time: 327.9
+6 ptrs/line:
+With training: 29.921% brought in, 76 of 254, with avg hit time: 255.4
+Without training: 65.354% not brought in, 166 of 254, with avg miss time: 326.0
+7 ptrs/line:
+With training: 26.772% brought in, 68 of 254, with avg hit time: 258.5
+Without training: 74.803% not brought in, 190 of 254, with avg miss time: 333.0
+8 ptrs/line:
+With training: 31.496% brought in, 80 of 254, with avg hit time: 253.5
+Without training: 67.717% not brought in, 172 of 254, with avg miss time: 323.7
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=4  -c augrey_test.c
+gcc -DN=4 -c util.c
+gcc -DN=4 augrey_test.o util.o -o augrey_test
+N = 4
+1 ptrs/line:
+With training: 46.429% brought in, 117 of 252, with avg hit time: 247.8
+Without training: 53.175% not brought in, 134 of 252, with avg miss time: 302.5
+2 ptrs/line:
+With training: 45.635% brought in, 115 of 252, with avg hit time: 254.4
+Without training: 54.365% not brought in, 137 of 252, with avg miss time: 313.4
+3 ptrs/line:
+With training: 38.095% brought in, 96 of 252, with avg hit time: 247.7
+Without training: 61.508% not brought in, 155 of 252, with avg miss time: 371.4
+6 ptrs/line:
+With training: 40.476% brought in, 102 of 252, with avg hit time: 247.4
+Without training: 60.317% not brought in, 152 of 252, with avg miss time: 375.0
+7 ptrs/line:
+With training: 30.159% brought in, 76 of 252, with avg hit time: 256.2
+Without training: 67.460% not brought in, 170 of 252, with avg miss time: 322.2
+8 ptrs/line:
+With training: 33.333% brought in, 84 of 252, with avg hit time: 248.6
+Without training: 65.476% not brought in, 165 of 252, with avg miss time: 360.1
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=8  -c augrey_test.c
+gcc -DN=8 -c util.c
+gcc -DN=8 augrey_test.o util.o -o augrey_test
+N = 8
+1 ptrs/line:
+With training: 34.274% brought in, 85 of 248, with avg hit time: 258.2
+Without training: 66.129% not brought in, 164 of 248, with avg miss time: 323.1
+2 ptrs/line:
+With training: 43.548% brought in, 108 of 248, with avg hit time: 252.5
+Without training: 56.452% not brought in, 140 of 248, with avg miss time: 307.2
+3 ptrs/line:
+With training: 16.935% brought in, 42 of 248, with avg hit time: 258.7
+Without training: 81.048% not brought in, 201 of 248, with avg miss time: 336.3
+6 ptrs/line:
+With training: 46.774% brought in, 116 of 248, with avg hit time: 245.2
+Without training: 49.597% not brought in, 123 of 248, with avg miss time: 364.0
+7 ptrs/line:
+With training: 22.984% brought in, 57 of 248, with avg hit time: 256.6
+Without training: 75.806% not brought in, 188 of 248, with avg miss time: 342.9
+8 ptrs/line:
+With training: 37.903% brought in, 94 of 248, with avg hit time: 256.8
+Without training: 63.306% not brought in, 157 of 248, with avg miss time: 315.8
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=16  -c augrey_test.c
+gcc -DN=16 -c util.c
+gcc -DN=16 augrey_test.o util.o -o augrey_test
+N = 16
+1 ptrs/line:
+With training: 31.250% brought in, 75 of 240, with avg hit time: 251.1
+Without training: 66.667% not brought in, 160 of 240, with avg miss time: 352.1
+2 ptrs/line:
+With training: 27.500% brought in, 66 of 240, with avg hit time: 256.3
+Without training: 70.833% not brought in, 170 of 240, with avg miss time: 328.3
+3 ptrs/line:
+With training: 38.333% brought in, 92 of 240, with avg hit time: 247.4
+Without training: 61.250% not brought in, 147 of 240, with avg miss time: 384.1
+6 ptrs/line:
+With training: 23.750% brought in, 57 of 240, with avg hit time: 257.9
+Without training: 75.417% not brought in, 181 of 240, with avg miss time: 332.9
+7 ptrs/line:
+With training: 15.000% brought in, 36 of 240, with avg hit time: 260.3
+Without training: 80.833% not brought in, 194 of 240, with avg miss time: 362.1
+8 ptrs/line:
+With training: 39.167% brought in, 94 of 240, with avg hit time: 253.1
+Without training: 62.500% not brought in, 150 of 240, with avg miss time: 348.0
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=32  -c augrey_test.c
+gcc -DN=32 -c util.c
+gcc -DN=32 augrey_test.o util.o -o augrey_test
+N = 32
+1 ptrs/line:
+With training: 24.554% brought in, 55 of 224, with avg hit time: 259.2
+Without training: 73.214% not brought in, 164 of 224, with avg miss time: 334.4
+2 ptrs/line:
+With training: 21.875% brought in, 49 of 224, with avg hit time: 256.9
+Without training: 78.125% not brought in, 175 of 224, with avg miss time: 327.4
+3 ptrs/line:
+With training: 47.321% brought in, 106 of 224, with avg hit time: 248.0
+Without training: 52.679% not brought in, 118 of 224, with avg miss time: 351.4
+6 ptrs/line:
+With training: 33.036% brought in, 74 of 224, with avg hit time: 255.9
+Without training: 64.732% not brought in, 145 of 224, with avg miss time: 325.9
+7 ptrs/line:
+With training: 29.911% brought in, 67 of 224, with avg hit time: 251.8
+Without training: 67.411% not brought in, 151 of 224, with avg miss time: 356.5
+8 ptrs/line:
+With training: 29.018% brought in, 65 of 224, with avg hit time: 257.1
+Without training: 68.750% not brought in, 154 of 224, with avg miss time: 327.1
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=64  -c augrey_test.c
+gcc -DN=64 -c util.c
+gcc -DN=64 augrey_test.o util.o -o augrey_test
+N = 64
+1 ptrs/line:
+With training: 19.271% brought in, 37 of 192, with avg hit time: 260.2
+Without training: 81.250% not brought in, 156 of 192, with avg miss time: 332.8
+2 ptrs/line:
+With training: 42.188% brought in, 81 of 192, with avg hit time: 253.4
+Without training: 53.646% not brought in, 103 of 192, with avg miss time: 324.8
+3 ptrs/line:
+With training: 33.333% brought in, 64 of 192, with avg hit time: 245.5
+Without training: 64.062% not brought in, 123 of 192, with avg miss time: 374.9
+6 ptrs/line:
+With training: 46.875% brought in, 90 of 192, with avg hit time: 246.7
+Without training: 53.646% not brought in, 103 of 192, with avg miss time: 363.0
+7 ptrs/line:
+With training: 28.646% brought in, 55 of 192, with avg hit time: 251.3
+Without training: 73.958% not brought in, 142 of 192, with avg miss time: 357.6
+8 ptrs/line:
+With training: 43.229% brought in, 83 of 192, with avg hit time: 244.6
+Without training: 55.729% not brought in, 107 of 192, with avg miss time: 391.9
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=128  -c augrey_test.c
+gcc -DN=128 -c util.c
+gcc -DN=128 augrey_test.o util.o -o augrey_test
+N = 128
+1 ptrs/line:
+With training: 50.781% brought in, 65 of 128, with avg hit time: 260.1
+Without training: 57.812% not brought in, 74 of 128, with avg miss time: 311.8
+2 ptrs/line:
+With training: 45.312% brought in, 58 of 128, with avg hit time: 242.1
+Without training: 55.469% not brought in, 71 of 128, with avg miss time: 332.1
+3 ptrs/line:
+With training: 21.094% brought in, 27 of 128, with avg hit time: 259.7
+Without training: 75.000% not brought in, 96 of 128, with avg miss time: 339.8
+6 ptrs/line:
+With training: 39.062% brought in, 50 of 128, with avg hit time: 254.7
+Without training: 63.281% not brought in, 81 of 128, with avg miss time: 310.6
+7 ptrs/line:
+With training: 17.188% brought in, 22 of 128, with avg hit time: 264.3
+Without training: 82.031% not brought in, 105 of 128, with avg miss time: 339.0
+8 ptrs/line:
+With training: 39.062% brought in, 50 of 128, with avg hit time: 255.0
+Without training: 62.500% not brought in, 80 of 128, with avg miss time: 310.6
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=206  -c augrey_test.c
+gcc -DN=206 -c util.c
+gcc -DN=206 augrey_test.o util.o -o augrey_test
+N = 206
+1 ptrs/line:
+With training: 26.000% brought in, 13 of 50, with avg hit time: 262.4
+Without training: 76.000% not brought in, 38 of 50, with avg miss time: 332.7
+2 ptrs/line:
+With training: 18.000% brought in, 9 of 50, with avg hit time: 254.6
+Without training: 86.000% not brought in, 43 of 50, with avg miss time: 336.9
+3 ptrs/line:
+With training: 24.000% brought in, 12 of 50, with avg hit time: 264.9
+Without training: 74.000% not brought in, 37 of 50, with avg miss time: 330.8
+6 ptrs/line:
+With training: 28.000% brought in, 14 of 50, with avg hit time: 265.1
+Without training: 72.000% not brought in, 36 of 50, with avg miss time: 332.5
+7 ptrs/line:
+With training: 22.000% brought in, 11 of 50, with avg hit time: 262.9
+Without training: 84.000% not brought in, 42 of 50, with avg miss time: 337.7
+8 ptrs/line:
+With training: 24.000% brought in, 12 of 50, with avg hit time: 262.2
+Without training: 84.000% not brought in, 42 of 50, with avg miss time: 337.4
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=224  -c augrey_test.c
+gcc -DN=224 -c util.c
+gcc -DN=224 augrey_test.o util.o -o augrey_test
+N = 224
+1 ptrs/line:
+With training: 15.625% brought in, 5 of 32, with avg hit time: 254.6
+Without training: 84.375% not brought in, 27 of 32, with avg miss time: 333.5
+2 ptrs/line:
+With training: 18.750% brought in, 6 of 32, with avg hit time: 262.0
+Without training: 65.625% not brought in, 21 of 32, with avg miss time: 342.1
+3 ptrs/line:
+With training: 59.375% brought in, 19 of 32, with avg hit time: 254.3
+Without training: 40.625% not brought in, 13 of 32, with avg miss time: 326.9
+6 ptrs/line:
+With training: 53.125% brought in, 17 of 32, with avg hit time: 252.8
+Without training: 46.875% not brought in, 15 of 32, with avg miss time: 315.6
+7 ptrs/line:
+With training: 9.375% brought in, 3 of 32, with avg hit time: 246.0
+Without training: 78.125% not brought in, 25 of 32, with avg miss time: 333.9
+8 ptrs/line:
+With training: 46.875% brought in, 15 of 32, with avg hit time: 239.6
+Without training: 50.000% not brought in, 16 of 32, with avg miss time: 322.0
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=240  -c augrey_test.c
+gcc -DN=240 -c util.c
+gcc -DN=240 augrey_test.o util.o -o augrey_test
+N = 240
+1 ptrs/line:
+With training: 37.500% brought in, 6 of 16, with avg hit time: 264.7
+Without training: 81.250% not brought in, 13 of 16, with avg miss time: 329.8
+2 ptrs/line:
+With training: 18.750% brought in, 3 of 16, with avg hit time: 255.3
+Without training: 68.750% not brought in, 11 of 16, with avg miss time: 328.1
+3 ptrs/line:
+With training: 50.000% brought in, 8 of 16, with avg hit time: 250.5
+Without training: 43.750% not brought in, 7 of 16, with avg miss time: 294.7
+6 ptrs/line:
+With training: 18.750% brought in, 3 of 16, with avg hit time: 261.0
+Without training: 87.500% not brought in, 14 of 16, with avg miss time: 328.1
+7 ptrs/line:
+With training: 37.500% brought in, 6 of 16, with avg hit time: 260.0
+Without training: 62.500% not brought in, 10 of 16, with avg miss time: 344.2
+8 ptrs/line:
+With training: 50.000% brought in, 8 of 16, with avg hit time: 242.4
+Without training: 50.000% not brought in, 8 of 16, with avg miss time: 439.6
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=248  -c augrey_test.c
+gcc -DN=248 -c util.c
+gcc -DN=248 augrey_test.o util.o -o augrey_test
+N = 248
+1 ptrs/line:
+With training: 50.000% brought in, 4 of 8, with avg hit time: 249.0
+Without training: 50.000% not brought in, 4 of 8, with avg miss time: 327.0
+2 ptrs/line:
+With training: 12.500% brought in, 1 of 8, with avg hit time: 234.0
+Without training: 75.000% not brought in, 6 of 8, with avg miss time: 327.0
+3 ptrs/line:
+With training: 50.000% brought in, 4 of 8, with avg hit time: 222.5
+Without training: 50.000% not brought in, 4 of 8, with avg miss time: 431.8
+6 ptrs/line:
+With training: 50.000% brought in, 4 of 8, with avg hit time: 248.2
+Without training: 37.500% not brought in, 3 of 8, with avg miss time: 328.7
+7 ptrs/line:
+With training: 37.500% brought in, 3 of 8, with avg hit time: 267.3
+Without training: 87.500% not brought in, 7 of 8, with avg miss time: 318.3
+8 ptrs/line:
+With training: 12.500% brought in, 1 of 8, with avg hit time: 249.0
+Without training: 75.000% not brought in, 6 of 8, with avg miss time: 336.0
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=252  -c augrey_test.c
+gcc -DN=252 -c util.c
+gcc -DN=252 augrey_test.o util.o -o augrey_test
+N = 252
+1 ptrs/line:
+With training: 50.000% brought in, 2 of 4, with avg hit time: 245.0
+Without training: 50.000% not brought in, 2 of 4, with avg miss time: 299.0
+2 ptrs/line:
+With training: 50.000% brought in, 2 of 4, with avg hit time: 267.0
+Without training: 75.000% not brought in, 3 of 4, with avg miss time: 353.3
+3 ptrs/line:
+With training: 25.000% brought in, 1 of 4, with avg hit time: 264.0
+Without training: 100.000% not brought in, 4 of 4, with avg miss time: 329.0
+6 ptrs/line:
+With training: 75.000% brought in, 3 of 4, with avg hit time: 257.7
+Without training: 25.000% not brought in, 1 of 4, with avg miss time: 316.0
+7 ptrs/line:
+With training: 75.000% brought in, 3 of 4, with avg hit time: 268.7
+Without training: 50.000% not brought in, 2 of 4, with avg miss time: 352.0
+8 ptrs/line:
+With training: 50.000% brought in, 2 of 4, with avg hit time: 262.0
+Without training: 50.000% not brought in, 2 of 4, with avg miss time: 351.5
+rm -f *.o *~ latency_test augrey_test
+gcc -DN=254  -c augrey_test.c
+gcc -DN=254 -c util.c
+gcc -DN=254 augrey_test.o util.o -o augrey_test
+N = 254
+1 ptrs/line:
+With training: 0.000% brought in, 0 of 2, with avg hit time: -nan
+Without training: 50.000% not brought in, 1 of 2, with avg miss time: 698.0
+2 ptrs/line:
+With training: 50.000% brought in, 1 of 2, with avg hit time: 241.0
+Without training: 100.000% not brought in, 2 of 2, with avg miss time: 464.0
+3 ptrs/line:
+With training: 50.000% brought in, 1 of 2, with avg hit time: 235.0
+Without training: 50.000% not brought in, 1 of 2, with avg miss time: 689.0
+6 ptrs/line:
+With training: 0.000% brought in, 0 of 2, with avg hit time: -nan
+Without training: 100.000% not brought in, 2 of 2, with avg miss time: 444.0
+7 ptrs/line:
+With training: 50.000% brought in, 1 of 2, with avg hit time: 224.0
+Without training: 50.000% not brought in, 1 of 2, with avg miss time: 317.0
+8 ptrs/line:
+With training: 100.000% brought in, 2 of 2, with avg hit time: 259.0
+Without training: 50.000% not brought in, 1 of 2, with avg miss time: 686.0

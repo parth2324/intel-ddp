@@ -6,7 +6,18 @@
 // #define N (M - TEST_SIZE)
 
 int main(int argc, char **argv){
+    if(argc != 3) return 1;
     srand(42);
+
+    int store_bypass, err;
+    sscanf(argv[2], "%d", &store_bypass);
+    if(store_bypass == 0){
+        err = prctl(PR_SET_SPECULATION_CTRL, PR_SPEC_STORE_BYPASS, PR_SPEC_DISABLE, 0L, 0L);
+    }
+    else{
+        err = prctl(PR_SET_SPECULATION_CTRL, PR_SPEC_STORE_BYPASS, PR_SPEC_ENABLE, 0L, 0L);
+    }
+    if(err == -1) return errno;
 
     int ptrs_per_line;  // 1 to 8 for 64B line
     sscanf(argv[1], "%d", &ptrs_per_line);
@@ -99,7 +110,7 @@ int main(int argc, char **argv){
     // printf("others_still_in_cache_test's error rate: %.3f%%\n", err_c / test_reps);
 
 
-    int repetitions = 1000;
+    int repetitions = 10000;
     // uint64_t *times_to_load_test_ptr_baseline =
     //     malloc(repetitions * sizeof(uint64_t));
     // uint64_t *times_to_load_test_ptr_aop =
@@ -182,10 +193,10 @@ int main(int argc, char **argv){
     }
     avg_miss_time /= miss_c;
 
-    printf("With training: %.3f%% brought in, %d of %d, with avg hit time: %.1f\n", 
-    ddp_hit_c * 100.0 / (M - N), ddp_hit_c, (M - N), avg_hit_time);
-    printf("Without training: %.3f%% not brought in, %d of %d, with avg miss time: %.1f\n", 
-    miss_c * 100.0 / (M - N), miss_c, (M - N), avg_miss_time);
+    printf("SSPD = %d with    training:\t %.3f%%\t     brought in,\t %d\t of\t %d\t with avg hit  time: %.1f\n", 
+    store_bypass, ddp_hit_c * 100.0 / (M - N), ddp_hit_c, (M - N), avg_hit_time);
+    printf("SSPD = %d without training:\t %.3f%%\t not brought in,\t %d\t of\t %d\t with avg miss time: %.1f\n", 
+    store_bypass, miss_c * 100.0 / (M - N), miss_c, (M - N), avg_miss_time);
 
     free(time_taken);
     return 0;

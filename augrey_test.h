@@ -1,4 +1,7 @@
 #include <assert.h>
+#include <linux/prctl.h>
+#include <sys/prctl.h>
+#include <errno.h>
 #include "util.h"
 
 #define INST_SYNC asm volatile("cpuid")
