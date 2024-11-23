@@ -28,5 +28,5 @@ double cache_reset_agent_test(volatile uint64_t* arr, int ind_scale, volatile ui
 double everything_still_in_cache_test(volatile uint64_t* arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size, volatile uint64_t* data_buffer);
 double not_overwritten_in_cache_test(volatile uint64_t* arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size, volatile uint64_t* data_buffer);
 double not_brought_in_cache_test(volatile uint64_t* arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size, volatile uint64_t* data_buffer);
-double others_still_in_cache_test(volatile uint64_t** arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size);
+double others_still_in_cache_test(volatile uint64_t* arr, int ind_scale, volatile uint64_t* thrash_arr, int thrash_size, volatile uint64_t* data_buffer);
 char* convertToBinary(uint64_t num, char* msg);

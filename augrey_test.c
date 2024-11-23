@@ -5,8 +5,7 @@
 
 // #define N (M - TEST_SIZE)
 
-void cpuid_chk()
-{
+void cpuid_chk(){
   char* _a = malloc(sizeof(char) * 100);
   char* _b = malloc(sizeof(char) * 100);
   char* _c = malloc(sizeof(char) * 100);
@@ -61,7 +60,7 @@ int main(int argc, char **argv){
     // printf("Initializing aop.\n");
     volatile uint64_t *aop = mmap(0, aop_mem, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     assert(aop != MAP_FAILED);
-    memset(aop, 0, aop_mem);
+    memset((uint64_t*)aop, 0, aop_mem);
     ADDR_PTR curr = (ADDR_PTR)aop;
     curr += (-curr) & (AOP_ALIGN_WIN - 1);
     aop = (volatile uint64_t *)curr;
@@ -116,28 +115,28 @@ int main(int argc, char **argv){
     err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
         printf("everything_still_in_cache_test's iteration %d.\n", i);
-        err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+        err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
     }
     printf("everything_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
     err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
         printf("not_overwritten_in_cache_test's iteration %d.\n", i);
-        err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+        err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
     }
     printf("not_overwritten_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
     err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
         printf("not_brought_in_cache_test's iteration %d.\n", i);
-        err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+        err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
     }
     printf("not_brought_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
     err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
         printf("others_still_in_cache_test's iteration %d.\n", i);
-        err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem);
+        err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
     }
     printf("others_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
