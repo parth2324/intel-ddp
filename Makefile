@@ -16,5 +16,4 @@ augrey_test: augrey_test.o util.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 clean:
-	rm -f *.o *~ latency_test augrey_test
-
+	rm -f *.o *~ OUT_*.txt latency_test augrey_test
