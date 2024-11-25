@@ -3,21 +3,21 @@
 N = 240
 1 ptrs/line:
 cache_reset_agent_test's iteration 0.
-bad array of pointers:  188      of     256      (73.44%)
+bad array of pointers:  191      of     256      (74.61%)
 bad data  of pointers:  23       of     256      (8.98%)
 cache_reset_agent_test's iteration 1.
-bad array of pointers:  190      of     256      (74.22%)
-bad data  of pointers:  25       of     256      (9.77%)
+bad array of pointers:  192      of     256      (75.00%)
+bad data  of pointers:  23       of     256      (8.98%)
 cache_reset_agent_test's iteration 2.
-bad array of pointers:  189      of     256      (73.83%)
-bad data  of pointers:  21       of     256      (8.20%)
+bad array of pointers:  195      of     256      (76.17%)
+bad data  of pointers:  19       of     256      (7.42%)
 cache_reset_agent_test's iteration 3.
-bad array of pointers:  190      of     256      (74.22%)
-bad data  of pointers:  22       of     256      (8.59%)
+bad array of pointers:  191      of     256      (74.61%)
+bad data  of pointers:  20       of     256      (7.81%)
 cache_reset_agent_test's iteration 4.
-bad array of pointers:  190      of     256      (74.22%)
-bad data  of pointers:  24       of     256      (9.38%)
-cache_reset_agent_test's net error rate: 41.484%
+bad array of pointers:  188      of     256      (73.44%)
+bad data  of pointers:  21       of     256      (8.20%)
+cache_reset_agent_test's net error rate: 41.523%
 everything_still_in_cache_test's iteration 0.
 bad array of pointers:  0        of     256      (0.00%)
 bad data  of pointers:  0        of     256      (0.00%)

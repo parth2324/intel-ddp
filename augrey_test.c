@@ -97,7 +97,7 @@ int main(int argc, char **argv){
         L3:                     36 MiB (1 instance)
     */
     // printf("Allocating thrash memory.\n");
-    int thr_mem = ((38 * 1024 * 1024) + (80 * 1024)) * 8, tgt_ind;
+    int thr_mem = ((38 * 1024 * 1024) + (80 * 1024)) * 4, tgt_ind;
     volatile uint64_t *thrash_arr = mmap(0, thr_mem, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     for(uint64_t i = 0; i < thr_mem / sizeof(uint64_t); i++) {
         tgt_ind = (1398107 * (i + 1)) % (thr_mem / sizeof(uint64_t));
@@ -106,11 +106,11 @@ int main(int argc, char **argv){
 
     // filling in the important addresses that must be flushed.
     for(uint64_t i = 0; i < M; i++) {
-        tgt_ind = (131 * (i + 1)) % (thr_mem / sizeof(uint64_t));
+        tgt_ind = (151 * (i + 1)) % (thr_mem / sizeof(uint64_t));
         thrash_arr[tgt_ind] = (ADDR_PTR)&aop[i * aop_ind_scale];
     }
     for(uint64_t i = 0; i < M; i++) {
-        tgt_ind = (131 * (i + M + 1)) % (thr_mem / sizeof(uint64_t));
+        tgt_ind = (151 * (i + M + 1)) % (thr_mem / sizeof(uint64_t));
         thrash_arr[tgt_ind] = aop[i * aop_ind_scale];
     }
 
