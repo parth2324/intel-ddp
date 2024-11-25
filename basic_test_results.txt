@@ -1,3 +1,5 @@
+// uses dedicated clflush for refresh:
+
 rm -f *.o *~ OUT_*.txt latency_test augrey_test
 gcc -DN=240  -c augrey_test.c
 gcc -DN=240 -c util.c
