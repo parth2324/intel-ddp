@@ -1,0 +1,214 @@
+// uses sneaky clflush for refresh:
+
+N = 240
+1 ptrs/line:
+cache_reset_agent_test's iteration 0.
+bad array of pointers:  188      of     256      (73.44%)
+bad data  of pointers:  23       of     256      (8.98%)
+cache_reset_agent_test's iteration 1.
+bad array of pointers:  190      of     256      (74.22%)
+bad data  of pointers:  25       of     256      (9.77%)
+cache_reset_agent_test's iteration 2.
+bad array of pointers:  189      of     256      (73.83%)
+bad data  of pointers:  21       of     256      (8.20%)
+cache_reset_agent_test's iteration 3.
+bad array of pointers:  190      of     256      (74.22%)
+bad data  of pointers:  22       of     256      (8.59%)
+cache_reset_agent_test's iteration 4.
+bad array of pointers:  190      of     256      (74.22%)
+bad data  of pointers:  24       of     256      (9.38%)
+cache_reset_agent_test's net error rate: 41.484%
+everything_still_in_cache_test's iteration 0.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 1.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 2.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 3.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 4.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's net error rate: 0.000%
+not_overwritten_in_cache_test's iteration 0.
+not_overwritten_in_cache_test's iteration 1.
+not_overwritten_in_cache_test's iteration 2.
+not_overwritten_in_cache_test's iteration 3.
+not_overwritten_in_cache_test's iteration 4.
+not_overwritten_in_cache_test's net error rate: 0.000%
+not_brought_in_cache_test's iteration 0.
+not_brought_in_cache_test's iteration 1.
+not_brought_in_cache_test's iteration 2.
+not_brought_in_cache_test's iteration 3.
+not_brought_in_cache_test's iteration 4.
+not_brought_in_cache_test's net error rate: 100.000%
+others_still_in_cache_test's iteration 0.
+others_still_in_cache_test's iteration 1.
+others_still_in_cache_test's iteration 2.
+others_still_in_cache_test's iteration 3.
+others_still_in_cache_test's iteration 4.
+others_still_in_cache_test's net error rate: 0.314%
+1 ptrs/line:
+cache_reset_agent_test's iteration 0.
+bad array of pointers:  191      of     256      (74.61%)
+bad data  of pointers:  40       of     256      (15.62%)
+cache_reset_agent_test's iteration 1.
+bad array of pointers:  193      of     256      (75.39%)
+bad data  of pointers:  21       of     256      (8.20%)
+cache_reset_agent_test's iteration 2.
+bad array of pointers:  197      of     256      (76.95%)
+bad data  of pointers:  30       of     256      (11.72%)
+cache_reset_agent_test's iteration 3.
+bad array of pointers:  191      of     256      (74.61%)
+bad data  of pointers:  42       of     256      (16.41%)
+cache_reset_agent_test's iteration 4.
+bad array of pointers:  191      of     256      (74.61%)
+bad data  of pointers:  23       of     256      (8.98%)
+cache_reset_agent_test's net error rate: 43.711%
+everything_still_in_cache_test's iteration 0.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 1.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 2.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 3.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 4.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's net error rate: 0.000%
+not_overwritten_in_cache_test's iteration 0.
+not_overwritten_in_cache_test's iteration 1.
+not_overwritten_in_cache_test's iteration 2.
+not_overwritten_in_cache_test's iteration 3.
+not_overwritten_in_cache_test's iteration 4.
+not_overwritten_in_cache_test's net error rate: 0.000%
+not_brought_in_cache_test's iteration 0.
+not_brought_in_cache_test's iteration 1.
+not_brought_in_cache_test's iteration 2.
+not_brought_in_cache_test's iteration 3.
+not_brought_in_cache_test's iteration 4.
+not_brought_in_cache_test's net error rate: 100.000%
+others_still_in_cache_test's iteration 0.
+others_still_in_cache_test's iteration 1.
+others_still_in_cache_test's iteration 2.
+others_still_in_cache_test's iteration 3.
+others_still_in_cache_test's iteration 4.
+others_still_in_cache_test's net error rate: 0.157%
+
+// normal:
+
+N = 240
+8 ptrs/line:
+cache_reset_agent_test's iteration 0.
+bad array of pointers:  245      of     256      (95.70%)
+bad data  of pointers:  46       of     256      (17.97%)
+cache_reset_agent_test's iteration 1.
+bad array of pointers:  243      of     256      (94.92%)
+bad data  of pointers:  52       of     256      (20.31%)
+cache_reset_agent_test's iteration 2.
+bad array of pointers:  244      of     256      (95.31%)
+bad data  of pointers:  45       of     256      (17.58%)
+cache_reset_agent_test's iteration 3.
+bad array of pointers:  246      of     256      (96.09%)
+bad data  of pointers:  45       of     256      (17.58%)
+cache_reset_agent_test's iteration 4.
+bad array of pointers:  245      of     256      (95.70%)
+bad data  of pointers:  47       of     256      (18.36%)
+cache_reset_agent_test's net error rate: 56.953%
+everything_still_in_cache_test's iteration 0.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 1.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 2.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 3.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 4.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's net error rate: 0.000%
+not_overwritten_in_cache_test's iteration 0.
+not_overwritten_in_cache_test's iteration 1.
+not_overwritten_in_cache_test's iteration 2.
+not_overwritten_in_cache_test's iteration 3.
+not_overwritten_in_cache_test's iteration 4.
+not_overwritten_in_cache_test's net error rate: 0.000%
+not_brought_in_cache_test's iteration 0.
+not_brought_in_cache_test's iteration 1.
+not_brought_in_cache_test's iteration 2.
+not_brought_in_cache_test's iteration 3.
+not_brought_in_cache_test's iteration 4.
+not_brought_in_cache_test's net error rate: 20.000%
+others_still_in_cache_test's iteration 0.
+others_still_in_cache_test's iteration 1.
+others_still_in_cache_test's iteration 2.
+others_still_in_cache_test's iteration 3.
+others_still_in_cache_test's iteration 4.
+others_still_in_cache_test's net error rate: 0.000%
+8 ptrs/line:
+cache_reset_agent_test's iteration 0.
+bad array of pointers:  247      of     256      (96.48%)
+bad data  of pointers:  43       of     256      (16.80%)
+cache_reset_agent_test's iteration 1.
+bad array of pointers:  244      of     256      (95.31%)
+bad data  of pointers:  34       of     256      (13.28%)
+cache_reset_agent_test's iteration 2.
+bad array of pointers:  246      of     256      (96.09%)
+bad data  of pointers:  32       of     256      (12.50%)
+cache_reset_agent_test's iteration 3.
+bad array of pointers:  242      of     256      (94.53%)
+bad data  of pointers:  35       of     256      (13.67%)
+cache_reset_agent_test's iteration 4.
+bad array of pointers:  242      of     256      (94.53%)
+bad data  of pointers:  39       of     256      (15.23%)
+cache_reset_agent_test's net error rate: 54.844%
+everything_still_in_cache_test's iteration 0.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 1.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 2.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 3.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's iteration 4.
+bad array of pointers:  0        of     256      (0.00%)
+bad data  of pointers:  0        of     256      (0.00%)
+everything_still_in_cache_test's net error rate: 0.000%
+not_overwritten_in_cache_test's iteration 0.
+not_overwritten_in_cache_test's iteration 1.
+not_overwritten_in_cache_test's iteration 2.
+not_overwritten_in_cache_test's iteration 3.
+not_overwritten_in_cache_test's iteration 4.
+not_overwritten_in_cache_test's net error rate: 0.000%
+not_brought_in_cache_test's iteration 0.
+not_brought_in_cache_test's iteration 1.
+not_brought_in_cache_test's iteration 2.
+not_brought_in_cache_test's iteration 3.
+not_brought_in_cache_test's iteration 4.
+not_brought_in_cache_test's net error rate: 60.000%
+others_still_in_cache_test's iteration 0.
+others_still_in_cache_test's iteration 1.
+others_still_in_cache_test's iteration 2.
+others_still_in_cache_test's iteration 3.
+others_still_in_cache_test's iteration 4.
+others_still_in_cache_test's net error rate: 0.000%
+./ddp_test.sh: line 11: ne: command not found
+./ddp_test.sh: line 12: syntax error near unexpected token `done'
+./ddp_test.sh: line 12: `done'

@@ -114,7 +114,7 @@ int main(int argc, char **argv){
         thrash_arr[tgt_ind] = aop[i * aop_ind_scale];
     }
 
-    int test_reps = 1;
+    int test_reps = 5;
 
     double err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
@@ -123,33 +123,33 @@ int main(int argc, char **argv){
     }
     printf("cache_reset_agent_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("everything_still_in_cache_test's iteration %d.\n", i);
-    //     err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    // }
-    // printf("everything_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("everything_still_in_cache_test's iteration %d.\n", i);
+        err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
+    }
+    printf("everything_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("not_overwritten_in_cache_test's iteration %d.\n", i);
-    //     err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    // }
-    // printf("not_overwritten_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("not_overwritten_in_cache_test's iteration %d.\n", i);
+        err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
+    }
+    printf("not_overwritten_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
     err_c = 0.0;
     for(int i = 0; i < test_reps; i++){
         printf("not_brought_in_cache_test's iteration %d.\n", i);
-        err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
+        err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
     }
     printf("not_brought_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("others_still_in_cache_test's iteration %d.\n", i);
-    //     err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    // }
-    // printf("others_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("others_still_in_cache_test's iteration %d.\n", i);
+        err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
+    }
+    printf("others_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
     // test_gen_eviction_set(aop[1]);
 
@@ -393,181 +393,159 @@ double everything_still_in_cache_test(volatile uint64_t* arr, int ind_scale,
 
 double not_overwritten_in_cache_test(volatile uint64_t* arr, int ind_scale, 
                                      volatile uint64_t* thrash_arr, int thrash_size,
-                                     volatile uint64_t* data_buffer){
+                                     volatile uint64_t* data_buffer, ADDR_PTR tgt_ind){
     int err_c = 0, thr_ind;
     uint64_t time_taken, MOD = M * ind_scale;
-    ADDR_PTR tgt;
+    ADDR_PTR tgt = arr[tgt_ind];
 
     // For preventing unwanted compiler optimizations and adding
     // data dependencies between instructions.
     uint64_t __trash = 0, THR_MAX_IND = thrash_size / sizeof(uint64_t);
 
-    for(int i = 0; i < M; i++){
-        tgt = arr[(i * ind_scale) % MOD];
-
-        // thrash cache
-        for (int j = 0; j < THR_MAX_IND - 2; j++) {
-            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
-            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
-            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
-        }
-        INST_SYNC;
-        for (int j = 0; j < THR_MAX_IND; j++) {
-            thr_ind = j % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-            thr_ind = (thr_ind + 1) % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-            thr_ind = (thr_ind + 1) % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-        }
-
-        INST_SYNC;
-
-        // bring ith.
-        maccess(tgt);
-
-        INST_SYNC;
-
-        // bring everything else into the cache.
-        for(int j = 0; j < M; j++){
-            if(j != i) maccess((ADDR_PTR)(&data_buffer[ind_gen(j)]));
-        }
-
-        INST_SYNC;
-
-        time_taken = maccess_t(tgt);
-        if(time_taken > HIT_CYCLES_MAX) err_c++;
-
-        INST_SYNC;
+    // thrash cache
+    for (int j = 0; j < THR_MAX_IND - 2; j++) {
+        __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+    }
+    INST_SYNC;
+    for (int j = 0; j < THR_MAX_IND; j++) {
+        thr_ind = j % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
     }
 
-    return (100.0 * err_c) / M;
+    INST_SYNC;
+
+    // bring ith.
+    maccess(tgt);
+
+    INST_SYNC;
+
+    // bring everything else into the cache.
+    for(int j = 0; j < M; j++){
+        if(j != tgt_ind) maccess((ADDR_PTR)(&data_buffer[ind_gen(j)]));
+    }
+
+    INST_SYNC;
+
+    time_taken = maccess_t(tgt);
+    if(time_taken > HIT_CYCLES_MAX) err_c++;
+
+    return (100.0 * err_c);
 }
 
 double not_brought_in_cache_test(volatile uint64_t* arr, int ind_scale, 
                                  volatile uint64_t* thrash_arr, int thrash_size,
-                                 volatile uint64_t* data_buffer){
+                                 volatile uint64_t* data_buffer, ADDR_PTR tgt_ind){
     int err_c = 0, thr_ind;
     uint64_t time_taken, MOD = M * ind_scale;
-    ADDR_PTR tgt;
+    ADDR_PTR tgt = arr[tgt_ind];
 
     // For preventing unwanted compiler optimizations and adding
     // data dependencies between instructions.
     uint64_t __trash = 0, THR_MAX_IND = thrash_size / sizeof(uint64_t);
 
-    for(int i = 0; i < M; i++){
-        tgt = arr[(i * ind_scale) % MOD];
-
-        // thrash cache
-        for (int j = 0; j < THR_MAX_IND - 2; j++) {
-            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
-            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
-            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
-        }
-        INST_SYNC;
-        for (int j = 0; j < THR_MAX_IND; j++) {
-            thr_ind = j % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-            thr_ind = (thr_ind + 1) % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-            thr_ind = (thr_ind + 1) % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-        }
-
-        INST_SYNC;
-
-        // bring everything into the cache.
-        for(int j = 0; j < M; j++){
-            maccess(arr[(j * ind_scale) % MOD]);
-        }
-
-        INST_SYNC;
-
-        // flush ith.
-        clflush(tgt);
-
-        INST_SYNC;
-
-        for(int j = 0; j < M; j++){
-            if(j != i) maccess((ADDR_PTR)(&data_buffer[ind_gen(j)]));
-        }
-
-        INST_SYNC;
-
-        // confirm not brought back in.
-        time_taken = maccess_t(tgt);
-        if(time_taken < HIT_CYCLES_MAX){
-            err_c++;
-        }
-
-        INST_SYNC;
+    // thrash cache
+    for (int j = 0; j < THR_MAX_IND - 2; j++) {
+        __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+    }
+    INST_SYNC;
+    for (int j = 0; j < THR_MAX_IND; j++) {
+        thr_ind = j % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
     }
 
-    return (err_c * 100.0) / M;
+    INST_SYNC;
+
+    // bring everything into the cache.
+    for(int j = 0; j < M; j++){
+        maccess(arr[(j * ind_scale) % MOD]);
+    }
+
+    INST_SYNC;
+
+    // flush ith.
+    clflush(tgt);
+
+    INST_SYNC;
+
+    for(int j = 0; j < M; j++){
+        if(j != tgt_ind) maccess((ADDR_PTR)(&data_buffer[ind_gen(j)]));
+    }
+
+    INST_SYNC;
+
+    // confirm not brought back in.
+    time_taken = maccess_t(tgt);
+    if(time_taken < HIT_CYCLES_MAX) err_c++;
+
+    return (err_c * 100.0);
 }
 
 double others_still_in_cache_test(volatile uint64_t* arr, int ind_scale, 
                                   volatile uint64_t* thrash_arr, int thrash_size,
-                                  volatile uint64_t* data_buffer){
+                                  volatile uint64_t* data_buffer, ADDR_PTR tgt_ind){
     int err_c = 0, thr_ind;
     uint64_t *time_taken = malloc(sizeof(uint64_t) * M), MOD = M * ind_scale;
-    ADDR_PTR tgt, agnst;
+    ADDR_PTR tgt = arr[tgt_ind];
 
     // For preventing unwanted compiler optimizations and adding
     // data dependencies between instructions.
     uint64_t __trash = 0, THR_MAX_IND = thrash_size / sizeof(uint64_t);
 
-    for(int i = 0; i < M; i++){
-        tgt = arr[(i * ind_scale) % MOD];
+    // thrash cache.
+    for (int j = 0; j < THR_MAX_IND - 2; j++) {
+        __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+    }
+    INST_SYNC;
+    for (int j = 0; j < THR_MAX_IND; j++) {
+        thr_ind = j % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+    }
 
-        // thrash cache.
-        for (int j = 0; j < THR_MAX_IND - 2; j++) {
-            __trash += (thrash_arr[j] ^ __trash) & 0b1111;
-            __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
-            __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
-        }
-        INST_SYNC;
-        for (int j = 0; j < THR_MAX_IND; j++) {
-            thr_ind = j % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-            thr_ind = (thr_ind + 1) % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-            thr_ind = (thr_ind + 1) % THR_MAX_IND;
-            clflush(thrash_arr[thr_ind]);
-        }
+    INST_SYNC;
 
-        INST_SYNC;
+    // bring everything into the cache.
+    for(int j = 0; j < M; j++){
+        maccess(arr[(j * ind_scale) % MOD]);
+    }
 
-        // bring everything into the cache.
-        for(int j = 0; j < M; j++){
-            maccess(arr[(j * ind_scale) % MOD]);
-        }
+    INST_SYNC;
 
-        INST_SYNC;
+    // flush ith.
+    clflush(tgt);
 
-        // flush ith.
-        clflush(tgt);
+    INST_SYNC;
 
-        INST_SYNC;
+    for(int j = 0; j < M; j++){
+        if(j != tgt_ind) time_taken[j] = maccess_t((ADDR_PTR)(&data_buffer[ind_gen(j)]));
+    }
 
-        for(int j = 0; j < M; j++){
-            if(j != i) time_taken[j] = maccess_t((ADDR_PTR)(&data_buffer[ind_gen(j)]));
-        }
+    INST_SYNC;
 
-        INST_SYNC;
-
-        for(int j = 0; j < M; j++){
-            // confirm jth still in cache.
-            if(j != i && time_taken[j] > HIT_CYCLES_MAX){
-                err_c++;
-            }
-        }
-
-        INST_SYNC;
+    for(int j = 0; j < M; j++){
+        // confirm jth still in cache.
+        if(j != tgt_ind && time_taken[j] > HIT_CYCLES_MAX) err_c++;
     }
 
     free(time_taken);
-    return (err_c * 100.0) / ((M - 1) * M);
+    return (err_c * 100.0) / (M - 1);
 }
 
 char* convertToBinary(uint64_t num, char* msg) {
