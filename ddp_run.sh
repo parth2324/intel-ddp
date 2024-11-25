@@ -1,11 +1,11 @@
 #!/bin/bash
 
-for train_size in 1 2 4 8 16 32 64 128 206 224 240 248 252 254;
+for train_size in 2 8 16 32 128 224 240 248 254;
 do
     make clean
     make augrey_test CFLAGS=-DN=$train_size
     echo "N = $train_size"
-    for pts_per_line in 1 2 3 6 7 8;
+    for pts_per_line in 1 2 7 8;
     do
         ./augrey_test $pts_per_line 0
         ./augrey_test $pts_per_line 1

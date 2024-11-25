@@ -16,7 +16,10 @@
 #define BUF_MEM (256 * 1024 * 1024)
 #define BUF_MOD (BUF_MEM / (sizeof(uint64_t) * U64S_PER_LINE))
 // 1398107, 37799 are primes
-#define ind_gen(x) (((71 * x) % BUF_MOD) * U64S_PER_LINE)
+#define BUF_GEN_PRIME 131071
+#define SELF_ALLOC_PRIME 1398107
+#define AOP_ALLOC_PRIME 151
+#define ind_gen(x) (((BUF_GEN_PRIME * x) % BUF_MOD) * U64S_PER_LINE)
 // #define PRNG_r (BUF_MEM / sizeof(uint64_t))
 // #define prng(x) ((PNRG_a * x) % PRNG_r)
 
