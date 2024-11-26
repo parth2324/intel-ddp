@@ -30,19 +30,19 @@ void test_gen_eviction_set(uint64_t tgt);
 double ddp_poc(uint64_t** arr, int ind_scale, 
             uint64_t* thrash_arr, int thrash_size, 
             uint64_t* data_buffer);
-double cache_reset_agent_test(volatile uint64_t* arr, int ind_scale, 
-                              volatile uint64_t* thrash_arr, int thrash_size, 
-                              volatile uint64_t* data_buffer);
-double everything_still_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                      volatile uint64_t* thrash_arr, int thrash_size, 
-                                      volatile uint64_t* data_buffer);
-double not_overwritten_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                     volatile uint64_t* thrash_arr, int thrash_size, 
-                                     volatile uint64_t* data_buffer, ADDR_PTR tgt_ind);
-double not_brought_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                 volatile uint64_t* thrash_arr, int thrash_size, 
-                                 volatile uint64_t* data_buffer, ADDR_PTR tgt_ind);
-double others_still_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                  volatile uint64_t* thrash_arr, int thrash_size, 
-                                  volatile uint64_t* data_buffer, ADDR_PTR tgt_ind);
+double cache_reset_agent_test( uint64_t** arr, int ind_scale, 
+                               uint64_t* thrash_arr, int thrash_size, 
+                               uint64_t* data_buffer);
+double everything_still_in_cache_test( uint64_t** arr, int ind_scale, 
+                                       uint64_t* thrash_arr, int thrash_size, 
+                                       uint64_t* data_buffer);
+double not_overwritten_in_cache_test( uint64_t** arr, int ind_scale, 
+                                      uint64_t* thrash_arr, int thrash_size, 
+                                      uint64_t* data_buffer, ADDR_PTR tgt_ind);
+double not_brought_in_cache_test( uint64_t** arr, int ind_scale, 
+                                  uint64_t* thrash_arr, int thrash_size, 
+                                  uint64_t* data_buffer, ADDR_PTR tgt_ind);
+double others_still_in_cache_test( uint64_t** arr, int ind_scale, 
+                                   uint64_t* thrash_arr, int thrash_size, 
+                                   uint64_t* data_buffer, ADDR_PTR tgt_ind);
 char* convertToBinary(uint64_t num, char* msg);

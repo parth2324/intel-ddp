@@ -2,7 +2,10 @@
 
 #define M 512
 #define MAIN_TEST_REPS 3
-#define TEST_SIZE 4
+#define TEST_SIZE 256
+
+#define PAGE_SIZE (4 * 1024)
+#define L1_LINE_SIZE 64
 
 #define N (M - TEST_SIZE)
 
@@ -14,7 +17,7 @@ void cpuid_chk(){
   uint64_t a, b, c, d;
   asm volatile(
             "mov $0x4, %%eax\n\t"
-            "mov $0x2, %%ecx\n\t"
+            "mov $0x1, %%ecx\n\t"
             "cpuid\n\t"
 	       : /*output*/ "=a"(a), "=b"(b), "=c"(c), "=d"(d)
 	       : /*input*/
@@ -120,44 +123,44 @@ int main(int argc, char **argv){
     }
 
     ddp_poc(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    exit(0);
+    // exit(0);
 
-    // int test_reps = 5;
+    int test_reps = 5;
 
-    // double err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("cache_reset_agent_test's iteration %d.\n", i);
-    //     err_c += cache_reset_agent_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    // }
-    // printf("cache_reset_agent_test's net error rate: %.3f%%\n", err_c / test_reps);
+    double err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("cache_reset_agent_test's iteration %d.\n", i);
+        err_c += cache_reset_agent_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
+    }
+    printf("cache_reset_agent_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("everything_still_in_cache_test's iteration %d.\n", i);
-    //     err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    // }
-    // printf("everything_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("everything_still_in_cache_test's iteration %d.\n", i);
+        err_c += everything_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
+    }
+    printf("everything_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("not_overwritten_in_cache_test's iteration %d.\n", i);
-    //     err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
-    // }
-    // printf("not_overwritten_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("not_overwritten_in_cache_test's iteration %d.\n", i);
+        err_c += not_overwritten_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
+    }
+    printf("not_overwritten_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("not_brought_in_cache_test's iteration %d.\n", i);
-    //     err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
-    // }
-    // printf("not_brought_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("not_brought_in_cache_test's iteration %d.\n", i);
+        err_c += not_brought_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
+    }
+    printf("not_brought_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
-    // err_c = 0.0;
-    // for(int i = 0; i < test_reps; i++){
-    //     printf("others_still_in_cache_test's iteration %d.\n", i);
-    //     err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
-    // }
-    // printf("others_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
+    err_c = 0.0;
+    for(int i = 0; i < test_reps; i++){
+        printf("others_still_in_cache_test's iteration %d.\n", i);
+        err_c += others_still_in_cache_test(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer, (rand() % M) * aop_ind_scale);
+    }
+    printf("others_still_in_cache_test's net error rate: %.3f%%\n", err_c / test_reps);
 
     // test_gen_eviction_set(aop[1]);
 
@@ -399,8 +402,8 @@ double ddp_poc(uint64_t** arr, int ind_scale,
     // data dependencies between instructions.
     uint64_t __trash = 0, THR_MAX_IND = thrash_size / sizeof(uint64_t);
 
-    size_t test_offset = ind_gen(N + 2);
-    uint64_t test_ptr = (ADDR_PTR)(&data_buffer[test_offset]), mode = 0;
+    size_t test_offset = ind_gen(N);
+    uint64_t mode = 0;
 
     // thrash cache.
     // for(int j = 0; j < M; j++){
@@ -471,16 +474,21 @@ double ddp_poc(uint64_t** arr, int ind_scale,
         INST_SYNC;
 
         // bring TLB entry
-        maccess((ADDR_PTR)(&data_buffer[(test_offset+128)]));
+        maccess((ADDR_PTR)(&data_buffer[(test_offset+16)]));
 
         // aop access pattern
         volatile uint64_t **aop_arr = (volatile uint64_t**)arr;
-        for (int j = 0; j < N; j++) {
-            __trash += *(aop_arr[(j % M) * ind_scale]) & MSB_MASK;
+        // for (int j = 0; j < N; j++) {
+        //     __trash += *(aop_arr[(j * ind_scale) % MOD]) & MSB_MASK;
+        // }
+        for(int j = 0; j < (N - 2) * ind_scale; j += ind_scale){
+            __trash += *(aop_arr[j % MOD]) & MSB_MASK;
+            __trash += *(aop_arr[(j + ind_scale) % MOD]) & MSB_MASK;
+            __trash += *(aop_arr[(j + ind_scale + ind_scale) % MOD]) & MSB_MASK;
         }
 
         // wait for DMP
-        for(uint64_t i=0; i<1000; i++) {
+        for(uint64_t i=0; i<10000; i++) {
             __trash = (__trash + 1) & 0xffff;
             __trash = __trash * __trash;
         }
@@ -488,7 +496,7 @@ double ddp_poc(uint64_t** arr, int ind_scale,
         INST_SYNC;
 
         // time access ptr
-        __trash = maccess_t(test_ptr);
+        __trash = maccess_t((ADDR_PTR)(&data_buffer[test_offset]));
 
         if(mode == 0) {
             // atk mode
@@ -538,9 +546,9 @@ double ddp_poc(uint64_t** arr, int ind_scale,
     return 0;
 }
 
-double cache_reset_agent_test(volatile uint64_t* arr, int ind_scale, 
-                              volatile uint64_t* thrash_arr, int thrash_size,
-                              volatile uint64_t* data_buffer){
+double cache_reset_agent_test(uint64_t** arr, int ind_scale, 
+                            uint64_t* thrash_arr, int thrash_size,
+                            uint64_t* data_buffer){
     int err_c1 = 0, err_c2 = 0, thr_ind;
     uint64_t time_taken[2 * M], MOD = M * ind_scale;
 
@@ -549,71 +557,78 @@ double cache_reset_agent_test(volatile uint64_t* arr, int ind_scale,
     uint64_t __trash = 0, THR_MAX_IND = thrash_size / sizeof(uint64_t);
 
     // access everything.
+    volatile uint64_t **aop_arr = (volatile uint64_t**)arr;
     for(int j = 0; j < (M - 2) * ind_scale; j += ind_scale){
-        maccess(arr[j % MOD]);
-        maccess(arr[(j + ind_scale) % MOD]);
-        maccess(arr[(j + ind_scale + ind_scale) % MOD]);
+        __trash += *(aop_arr[j % MOD]) & MSB_MASK;
+        __trash += *(aop_arr[(j + ind_scale) % MOD]) & MSB_MASK;
+        __trash += *(aop_arr[(j + ind_scale + ind_scale) % MOD]) & MSB_MASK;
     }
 
     INST_SYNC;
 
     // thrash cache.
-    // for (int j = 0; j < THR_MAX_IND - 2; j++) {
-    //     __trash += (thrash_arr[j] ^ __trash) & 0b1111;
-    //     __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
-    //     __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
-    // }
-    // INST_SYNC;
-    // for (int j = 0; j < THR_MAX_IND; j++) {
-    //     thr_ind = j % THR_MAX_IND;
-    //     clflush(thrash_arr[thr_ind]);
-    //     thr_ind = (thr_ind + 1) % THR_MAX_IND;
-    //     clflush(thrash_arr[thr_ind]);
-    //     thr_ind = (thr_ind + 1) % THR_MAX_IND;
-    //     clflush(thrash_arr[thr_ind]);
+    for (int j = 0; j < THR_MAX_IND - 2; j++) {
+        __trash += (thrash_arr[j] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 1] ^ __trash) & 0b1111;
+        __trash += (thrash_arr[j + 2] ^ __trash) & 0b1111;
+    }
+    INST_SYNC;
+    for (int j = 0; j < THR_MAX_IND; j++) {
+        thr_ind = j % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+        thr_ind = (thr_ind + 1) % THR_MAX_IND;
+        clflush(thrash_arr[thr_ind]);
+    }
+    // for(uint32_t page_offset=0; page_offset<PAGE_SIZE; \
+    //     page_offset+=L1_LINE_SIZE) {
+    //     // inner loop for ways
+    //     for(uint32_t page_idx=0; page_idx<(thrash_size - 2*PAGE_SIZE); page_idx+=PAGE_SIZE) {
+    //         __trash += (thrash_arr[(page_idx+page_offset)/sizeof(uint64_t)] ^ __trash) & 0b1111;
+    //         __trash += (thrash_arr[(page_idx+page_offset+PAGE_SIZE)/sizeof(uint64_t)] ^ __trash) & 0b1111;
+    //         __trash += (thrash_arr[(page_idx+page_offset+2*PAGE_SIZE)/sizeof(uint64_t)] ^ __trash) & 0b1111;
+    //     }
     // }
 
-    for(int j = 0; j < M; j++){
-        clflush(arr[(j * ind_scale) % MOD]);
-    }
-    for(int j = 0; j < M; j++){
-        clflush((ADDR_PTR)(&arr[(j * ind_scale) % MOD]));
-    }
+    // for(int j = 0; j < M; j++){
+    //     clflush(arr[(j * ind_scale) % MOD]);
+    // }
+    // for(int j = 0; j < M; j++){
+    //     clflush((ADDR_PTR)(&arr[(j * ind_scale) % MOD]));
+    // }
 
     INST_SYNC;
 
     // check from bottom up that all gone.
-    // for(int i = 0; i < M; i++){
-    //     time_taken[i] = maccess_t((ADDR_PTR)(&data_buffer[ind_gen(i)]));
-    // }
-
-    INST_SYNC;
-
     for(int i = 0; i < M; i++){
-        time_taken[i] = maccess_t((ADDR_PTR)(&arr[(i * ind_scale) % MOD]));
+        time_taken[i] = maccess_t((ADDR_PTR)(&data_buffer[ind_gen(i)]));
     }
 
     INST_SYNC;
 
     for(int i = 0; i < M; i++){
-        if(time_taken[i] < HIT_CYCLES_MAX){
-            printf("%d\n", i);
-            err_c1++;
-        }
+        time_taken[i + M] = maccess_t((ADDR_PTR)(&arr[(i * ind_scale) % MOD]));
     }
-    // for(int i = M; i < (M << 1); i++){
-    //     if(time_taken[i] < HIT_CYCLES_MAX) err_c2++;
-    // }
 
-    // printf("bad array of pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c2, M, (100.0 * err_c2 / M));
-    printf("bad pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c1, M, (100.0 * err_c1 / M));
+    INST_SYNC;
+
+    for(int i = 0; i < M; i++){
+        if(time_taken[i] < HIT_CYCLES_MAX) err_c1++;
+    }
+    for(int i = M; i < (M << 1); i++){
+        if(time_taken[i] < HIT_CYCLES_MAX) err_c2++;
+    }
+
+    printf("bad array pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c2, M, (100.0 * err_c2 / M));
+    printf("bad data  pointers: \t%d\t of \t%d\t (%.2f%%)\n", err_c1, M, (100.0 * err_c1 / M));
 
     return (err_c1 + err_c2) * 100.0 / (M << 1);
 }
 
-double everything_still_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                      volatile uint64_t* thrash_arr, int thrash_size,
-                                      volatile uint64_t* data_buffer){
+double everything_still_in_cache_test(uint64_t** arr, int ind_scale, 
+                                     uint64_t* thrash_arr, int thrash_size,
+                                     uint64_t* data_buffer){
     int err_c1 = 0, err_c2 = 0, thr_ind;
     uint64_t time_taken[2 * M], MOD = M * ind_scale;
 
@@ -674,9 +689,9 @@ double everything_still_in_cache_test(volatile uint64_t* arr, int ind_scale,
     return (err_c1 + err_c2) * 100.0 / (M << 1);
 }
 
-double not_overwritten_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                     volatile uint64_t* thrash_arr, int thrash_size,
-                                     volatile uint64_t* data_buffer, ADDR_PTR tgt_ind){
+double not_overwritten_in_cache_test(uint64_t** arr, int ind_scale, 
+                                     uint64_t* thrash_arr, int thrash_size,
+                                     uint64_t* data_buffer, ADDR_PTR tgt_ind){
     int err_c = 0, thr_ind;
     uint64_t time_taken, MOD = M * ind_scale;
     ADDR_PTR tgt = arr[tgt_ind];
@@ -721,9 +736,9 @@ double not_overwritten_in_cache_test(volatile uint64_t* arr, int ind_scale,
     return (100.0 * err_c);
 }
 
-double not_brought_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                 volatile uint64_t* thrash_arr, int thrash_size,
-                                 volatile uint64_t* data_buffer, ADDR_PTR tgt_ind){
+double not_brought_in_cache_test(uint64_t** arr, int ind_scale, 
+                                 uint64_t* thrash_arr, int thrash_size,
+                                 uint64_t* data_buffer, ADDR_PTR tgt_ind){
     int err_c = 0, thr_ind;
     uint64_t time_taken, MOD = M * ind_scale;
     ADDR_PTR tgt = arr[tgt_ind];
@@ -777,9 +792,9 @@ double not_brought_in_cache_test(volatile uint64_t* arr, int ind_scale,
     return (err_c * 100.0);
 }
 
-double others_still_in_cache_test(volatile uint64_t* arr, int ind_scale, 
-                                  volatile uint64_t* thrash_arr, int thrash_size,
-                                  volatile uint64_t* data_buffer, ADDR_PTR tgt_ind){
+double others_still_in_cache_test(uint64_t** arr, int ind_scale, 
+                                 uint64_t* thrash_arr, int thrash_size,
+                                 uint64_t* data_buffer, ADDR_PTR tgt_ind){
     int err_c = 0, thr_ind;
     uint64_t time_taken[M], MOD = M * ind_scale;
     ADDR_PTR tgt = arr[tgt_ind];
