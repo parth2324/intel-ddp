@@ -6,10 +6,10 @@
 
 #define INST_SYNC asm volatile("cpuid")
 
-#define HIT_CYCLES_MAX 275
+#define HIT_CYCLES_MAX 150
 #define CACHE_LINE_SIZE 64
 #define MSB_MASK ((uint64_t)-1)
-#define AOP_ALIGN_WIN (2 * 1024 * 1024)
+#define AOP_ALIGN_WIN (4 * 1024)
 #define BUF_ALIGN_WIN CACHE_LINE_SIZE
 #define U64S_PER_LINE (CACHE_LINE_SIZE / sizeof(uint64_t))
 #define PNRG_a 75
@@ -27,6 +27,9 @@ typedef long int intptr_t;
 
 int main();
 void test_gen_eviction_set(uint64_t tgt);
+double ddp_poc(uint64_t** arr, int ind_scale, 
+            uint64_t* thrash_arr, int thrash_size, 
+            uint64_t* data_buffer);
 double cache_reset_agent_test(volatile uint64_t* arr, int ind_scale, 
                               volatile uint64_t* thrash_arr, int thrash_size, 
                               volatile uint64_t* data_buffer);
