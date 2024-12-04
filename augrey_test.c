@@ -123,7 +123,6 @@ int main(int argc, char **argv){
     }
 
     ddp_poc(aop, aop_ind_scale, thrash_arr, thr_mem, data_buffer);
-    // exit(0);
 
     int test_reps = 5;
 
